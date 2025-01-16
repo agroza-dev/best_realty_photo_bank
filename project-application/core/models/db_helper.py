@@ -1,11 +1,13 @@
-from typing import AsyncGenerator
-
+from typing import AsyncGenerator, Callable, TypeVar, Awaitable, Generic
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, async_sessionmaker, AsyncSession
 
 from core.config import settings
 
 
-class DatabaseHelper:
+T = TypeVar('T')
+
+
+class DatabaseHelper(Generic[T]):
     def __init__(
             self,
             url: str,
@@ -33,6 +35,30 @@ class DatabaseHelper:
     async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.session_factory() as session:
             yield session
+
+    async def execute_with_session(
+            self,
+            func: Callable[..., Awaitable[T]],
+            *args,
+            **kwargs
+    ) -> T:
+        async with self.session_factory() as session:
+            return await func(session, *args, **kwargs)
+
+    async def execute_with_session_scope(
+            self,
+            func: Callable[..., Awaitable[T]],
+            *args,
+            **kwargs
+    ) -> T:
+        async with self.session_factory() as session:
+            try:
+                result = await func(session, *args, **kwargs)
+                await session.commit()
+                return result
+            except Exception as e:
+                await session.rollback()
+                raise e
 
 
 db_helper = DatabaseHelper(
