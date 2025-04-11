@@ -1,8 +1,8 @@
 import os
+from functools import cached_property
 from pathlib import Path
 
 from pydantic import BaseModel
-from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,11 +22,18 @@ class ApiConfig(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    url: PostgresDsn
+    path: str
     echo: bool = False
     echo_pool: bool = False
-    pool_size: int = 50
-    max_overflow: int = 10
+
+    def resolve_dsn(self, base_dir: Path) -> str:
+        return f"sqlite+aiosqlite:///{(base_dir / self.path).resolve()}"
+
+    # лениво получаем dsn без передачи вручную
+    @cached_property
+    def dsn(self) -> str:
+        base_dir = Path(__file__).resolve().parent.parent
+        return self.resolve_dsn(base_dir)
 
     naming_convention: dict[str, str] = {
         "ix": "ix_%(column_0_label)s",
@@ -35,6 +42,10 @@ class DatabaseConfig(BaseModel):
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
     }
+
+
+class BotConfig(BaseModel):
+    token: str = ''
 
 
 class Settings(BaseSettings):
@@ -48,6 +59,7 @@ class Settings(BaseSettings):
     app: RunApp = RunApp()
     api: ApiConfig = ApiConfig()
     db: DatabaseConfig
+    bot: BotConfig = BotConfig()
 
 
 settings = Settings()
