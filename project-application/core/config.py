@@ -5,6 +5,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BASE_DIR: Path = Path(__file__).resolve().parent.parent
 
 class RunApp(BaseModel):
     host: str = '0.0.0.0'
@@ -32,8 +33,7 @@ class DatabaseConfig(BaseModel):
     # лениво получаем dsn без передачи вручную
     @cached_property
     def dsn(self) -> str:
-        base_dir = Path(__file__).resolve().parent.parent
-        return self.resolve_dsn(base_dir)
+        return self.resolve_dsn(BASE_DIR)
 
     naming_convention: dict[str, str] = {
         "ix": "ix_%(column_0_label)s",
@@ -47,9 +47,10 @@ class DatabaseConfig(BaseModel):
 class BotConfig(BaseModel):
     token: str = ''
 
+class LoggerConfig(BaseModel):
+    path: str = os.path.join(BASE_DIR, "var/logs")
 
 class Settings(BaseSettings):
-    BASE_DIR: Path = Path(__file__).resolve().parent.parent
     model_config = SettingsConfigDict(
         env_file=(os.path.join(BASE_DIR, ".env.template"), os.path.join(BASE_DIR, ".env")),
         case_sensitive=False,
@@ -60,6 +61,7 @@ class Settings(BaseSettings):
     api: ApiConfig = ApiConfig()
     db: DatabaseConfig
     bot: BotConfig = BotConfig()
+    logs: LoggerConfig = LoggerConfig()
 
 
 settings = Settings()
