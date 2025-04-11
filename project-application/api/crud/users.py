@@ -12,6 +12,13 @@ async def get_all_users(session: AsyncSession) -> Sequence[User]:
     result = await session.scalars(statement)
     return result.all()
 
+async def get_user_by_tg_id(
+        session: AsyncSession,
+        tg_id: int
+) -> User:
+    statement = select(User).where(User.telegram_id == tg_id)
+    result = await session.scalars(statement)
+    return result.first()
 
 async def create_user(
     session: AsyncSession,
@@ -20,5 +27,4 @@ async def create_user(
     user = User(**user_create.model_dump())
     session.add(user)
     await session.commit()
-    # await session.refresh(user)
     return user
