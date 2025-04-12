@@ -1,0 +1,1 @@
+WAITING_FOR_PHOTOS = 'waiting_for_photos'
