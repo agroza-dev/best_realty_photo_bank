@@ -1,7 +1,7 @@
 from .start import start as start_handler
-from .add_photos import handler as add_photos_handler
+from .start_photo_process import handler as start_photo_process_handler
 
 __all__ = [
     "start_handler",
-    "add_photos_handler",
+    "start_photo_process_handler",
 ]
