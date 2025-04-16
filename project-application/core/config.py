@@ -48,6 +48,9 @@ class BotConfig(BaseModel):
     token: str = ''
     templates: str = os.path.join(BASE_DIR, "bot/templates")
 
+class ImageConfig(BaseModel):
+    path: str = os.path.join(BASE_DIR, "var/images")
+
 class LoggerConfig(BaseModel):
     path: str = os.path.join(BASE_DIR, "var/logs")
 
@@ -63,6 +66,7 @@ class Settings(BaseSettings):
     db: DatabaseConfig
     bot: BotConfig = BotConfig()
     logs: LoggerConfig = LoggerConfig()
+    images: ImageConfig = ImageConfig()
 
 
 settings = Settings()
