@@ -6,8 +6,6 @@ from .base import Base
 
 
 class Image(Base):
-    # Идентификаторы Telegram
-    file_id: Mapped[str] = mapped_column(String, nullable=False)
     file_unique_id: Mapped[str] = mapped_column(String, nullable=True)
 
     # Локальный путь к файлу
