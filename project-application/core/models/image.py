@@ -21,7 +21,10 @@ class Image(Base):
 
     # Привязка к пользователю, который добавил фото
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user: Mapped["User"] = relationship(back_populates="images")
+    user: Mapped["User"] = relationship(
+        foreign_keys="[Image.user_id]",
+        back_populates="images",
+    )
 
     # Дата добавления
     added_at: Mapped[datetime] = mapped_column(
@@ -34,6 +37,9 @@ class Image(Base):
 
     # Кто скрыл (внутренний ID пользователя, скрывшего фото)
     hidden_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    hidden_by: Mapped["User"] = relationship(foreign_keys=[hidden_by_id])
+    hidden_by: Mapped["User"] = relationship(
+        foreign_keys="[Image.hidden_by_id]",
+        back_populates="hidden_images",
+    )
 
     hidden_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

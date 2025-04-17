@@ -27,9 +27,14 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
         server_onupdate=func.now(),
     )
-    images: Mapped[list["Image"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    images: Mapped[list["Image"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        foreign_keys="[Image.user_id]"
+    )
     hidden_images: Mapped[list["Image"]] = relationship(
-        foreign_keys="[Image.hidden_by_id]", back_populates="hidden_by", viewonly=True
+        back_populates="hidden_by", viewonly=True,
+        foreign_keys="[Image.hidden_by_id]",
     )
 
     def __repr__(self) -> str:
