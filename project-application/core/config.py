@@ -47,6 +47,12 @@ class DatabaseConfig(BaseModel):
 class BotConfig(BaseModel):
     token: str = ''
     templates: str = os.path.join(BASE_DIR, "bot/templates")
+    builder: dict[str, float] = {
+        'connect': 3.0,
+        'read': 10.0,
+        'write': 10.0,
+        'pool': 2.0,
+    }
 
 class ImageConfig(BaseModel):
     path: str = os.path.join(BASE_DIR, "var/images")
