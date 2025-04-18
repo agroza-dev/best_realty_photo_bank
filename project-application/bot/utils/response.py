@@ -1,15 +1,18 @@
 from typing import cast
 
 import telegram
-from telegram import Chat, InlineKeyboardMarkup, Update, InputMediaPhoto
+from telegram import Chat, InlineKeyboardMarkup, Update, InputMediaPhoto, Message
 from telegram.ext import ContextTypes
+
+from bot.handlers.helper import do_with_retry
+
 
 async def send_response(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     response: str,
     keyboard: InlineKeyboardMarkup | None = None,
-) -> None:
+) -> Message:
     args = {
         "chat_id": _get_chat_id(update),
         "disable_web_page_preview": True,
@@ -19,7 +22,11 @@ async def send_response(
     if keyboard:
         args["reply_markup"] = keyboard
 
-    await context.bot.send_message(**args)
+    return await do_with_retry(context.bot.send_message, **args, label='send_response')
+
+
+async def delete_message(update: Update, message_id):
+    return await do_with_retry(update.effective_chat.delete_message, message_id, label='delete_message')
 
 
 async def send_photo(
