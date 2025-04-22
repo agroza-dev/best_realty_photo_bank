@@ -4,9 +4,15 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.models.user import User
 
 class Image(Base):
     file_unique_id: Mapped[str] = mapped_column(String, nullable=True)
+    # Нужен для того, чтобы можно было не сохранять оригинал, а дергать сразу с серверов телеги.
+    file_id: Mapped[str] = mapped_column(String, nullable=False)
 
     # Локальный путь к файлу
     local_file_name: Mapped[str] = mapped_column(String, nullable=True)

@@ -11,6 +11,7 @@ class ImageBase(BaseModel):
 
 class ImageCreate(ImageBase):
     session_id: str
+    file_id: str
     pass
 
 

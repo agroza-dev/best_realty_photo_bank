@@ -5,7 +5,11 @@ from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import func, text
 
-from core.models.image import Image
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.models.image import Image
+
 from .base import Base
 
 
