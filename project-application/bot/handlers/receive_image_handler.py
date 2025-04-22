@@ -28,6 +28,32 @@ class CreatedImage:
     file_unique_id: str
 
 
+async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
+    message_media_group_id = update.message.media_group_id
+    context.user_data['session_media_group'] = message_media_group_id
+
+    last_message_id = context.user_data.get('last_message_id', False)
+    logger.info(f"last_message_id = {last_message_id}")
+    if last_message_id is not False:
+        logger.info(f"Try to delete message: {last_message_id}")
+        try:
+            await delete_message(update, last_message_id)
+        except TimedOut:
+            logger.warning(f"Timed out while deleting message: {last_message_id}")
+
+    sent_message = False
+    try:
+        sent_message = await send_response(
+            update,
+            context,
+            response=render_template("receive_image.j2", {'status': 'in_progress'})
+        )
+        logger.info(f"Sent message {sent_message}")
+        context.user_data['last_message_id'] = sent_message.message_id
+    except TimedOut:
+        logger.warning(f"Timed out while sending message: {sent_message}")
+
+
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
 
@@ -41,7 +67,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return None
 
-    logger.info(f"receive_photos_handler user_data: {context.user_data} from user: {user}")
+    logger.info(f"receive_images_handler user_data: {context.user_data} from user: {user}")
     allowed_states = [state.WAITING_FOR_PHOTOS, state.WAITING_FOR_TAGS]
     current_states = context.user_data.get('states', state.EMPTY)
 
@@ -54,35 +80,14 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    logger.info(f"receive_photos_handler message: {message}")
-    if message.photo:
+    logger.info(f"receive_image_handler message: {message}")
+    if message.photo or message.document:
         message_media_group_id = message.media_group_id
         session_media_group_id = context.user_data.get('session_media_group', False)
         logger.info(f"MEDIA GROUP: message -> {message_media_group_id}    session -> {session_media_group_id}")
         if not session_media_group_id or session_media_group_id != message_media_group_id:
-            context.user_data['session_media_group'] = message_media_group_id
-
-            last_message_id = context.user_data.get('last_message_id', False)
-            logger.info(f"last_message_id = {last_message_id}")
-            if last_message_id is not False:
-                logger.info(f"Try to delete message: {last_message_id}")
-                try:
-                    await delete_message(update, last_message_id)
-                except TimedOut:
-                    logger.warning(f"Timed out while deleting message: {last_message_id}")
-
-            sent_message = False
-            try:
-                sent_message = await send_response(
-                    update,
-                    context,
-                    response=render_template("receive_image.j2", {'status': 'in_progress'})
-                )
-                logger.info(f"Sent message {sent_message}")
-                context.user_data['last_message_id'] = sent_message.message_id
-            except TimedOut:
-                logger.warning(f"Timed out while sending message: {sent_message}")
-
+            await before_process(context, update)
+        logger.info(f"Context data after_before process: {context.user_data}")
 
         img_name = uuid4().hex
         created_image = await save_telegram_image(context.bot, message, settings.images.path, img_name)
