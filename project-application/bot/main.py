@@ -4,7 +4,7 @@ from telegram.request import HTTPXRequest
 
 from core.config import settings
 
-from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler
+from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler, show_webapp_handler
 
 if __name__ == "__main__":
     request = HTTPXRequest(
@@ -21,5 +21,6 @@ if __name__ == "__main__":
     application = ApplicationBuilder().token(settings.bot.token).request(request).build()
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
+    application.add_handler(CommandHandler("show", show_webapp_handler))
     application.add_handler(MessageHandler(filters.PHOTO | filters.ATTACHMENT, receive_image_handler))
     application.run_polling()

@@ -21,6 +21,9 @@ class ApiConfig(BaseModel):
     prefix: str = "/api"
     v1: ApiV1Config = ApiV1Config()
 
+class WebAppConfig(BaseModel):
+        URL: str = "https://sharp-impalas-run.loca.lt/"
+        templates: str = os.path.join(BASE_DIR, "web_app/templates")
 
 class DatabaseConfig(BaseModel):
     path: str
@@ -73,6 +76,7 @@ class Settings(BaseSettings):
     bot: BotConfig = BotConfig()
     logs: LoggerConfig = LoggerConfig()
     images: ImageConfig = ImageConfig()
+    web_app: WebAppConfig = WebAppConfig()
 
 
 settings = Settings()
