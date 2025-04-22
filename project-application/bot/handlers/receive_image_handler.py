@@ -1,9 +1,10 @@
 import os
 from dataclasses import dataclass
+from io import BytesIO
 
 from uuid import uuid4
 
-from telegram import Update, Message
+from telegram import Update, Message, PhotoSize
 from telegram._bot import BT
 from telegram.ext import ContextTypes
 
@@ -23,9 +24,8 @@ from telegram.error import TimedOut
 
 @dataclass
 class CreatedImage:
-    original: str
-    thumbnail: str
     file_unique_id: str
+    file_id: str
 
 
 async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
@@ -89,8 +89,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await before_process(context, update)
         logger.info(f"Context data after_before process: {context.user_data}")
 
-        img_name = uuid4().hex
-        created_image = await save_telegram_image(context.bot, message, settings.images.path, img_name)
+        created_image = await save_telegram_image(context.bot, message, settings.images.path)
         session_image_count = context.user_data.get('session_image_count', 0)
         context.user_data['session_image_count'] =  session_image_count + 1
 
@@ -99,7 +98,8 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         new_image_create = ImageCreate(
             file_unique_id=created_image.file_unique_id,
-            local_file_name=img_name,
+            file_id=created_image.file_id,
+            local_file_name=created_image.file_unique_id,
             user_id=user.id,
             session_id=context.user_data.get('session'),
             description=context.user_data.get('session_message') or '',
@@ -127,58 +127,43 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['last_message_id'] = sent_message.message_id
 
 
-async def save_telegram_image(bot: BT, message: Message, save_dir: str, prefix: str) -> CreatedImage:
+TARGET_THUMB_SIZE = (320, 320)
+
+async def save_telegram_image(bot: BT, message: Message, save_dir: str) -> CreatedImage:
     os.makedirs(save_dir, exist_ok=True)
-    logger.info(f" try to save image from message: {message}")
+    logger.info(f"Try to save image from message: {message}")
+
+    async def download_and_resize(file: PhotoSize):
+        thumb_path = os.path.join(save_dir, f"{file.file_unique_id}_thumb.jpg")
+        telegram_file = await bot.get_file(file.file_id)
+        file_bytes = BytesIO()
+        await telegram_file.download_to_memory(out=file_bytes)
+        file_bytes.seek(0)
+
+        image = Image.open(file_bytes)
+        image.thumbnail(TARGET_THUMB_SIZE, Image.Resampling.LANCZOS)
+        image.save(thumb_path, "JPEG")
 
     if message.photo:
         photo_sizes = sorted(message.photo, key=lambda p: p.width)
         original = photo_sizes[-1]
         thumbnail = photo_sizes[1] if len(photo_sizes) > 2 else photo_sizes[0]
-
-        logger.info(f"Original: {original}")
-        logger.info(f"Thumbnail: {thumbnail}")
-
-        orig_path = os.path.join(save_dir, f"{prefix}_original.jpg")
-        thumb_path = os.path.join(save_dir, f"{prefix}_thumb.jpg")
-
-        await do_with_retry((await bot.get_file(original.file_id)).download_to_drive,  orig_path, label='original')
-        await do_with_retry((await bot.get_file(thumbnail.file_id)).download_to_drive,  thumb_path, label='thumbnail')
+        print(thumbnail)
+        await download_and_resize(thumbnail)
 
         return CreatedImage(
-            original=orig_path,
-            thumbnail=thumb_path,
-            file_unique_id=original.file_unique_id
+            file_unique_id=original.file_unique_id,
+            file_id=original.file_id
         )
 
     elif message.document and message.document.mime_type.startswith("image/"):
         doc = message.document
-        mime_type = message.document.mime_type if message.document else None
-
-        is_jpeg = mime_type == "image/jpeg"
-
-        orig_path = os.path.join(save_dir, f"{prefix}_original.jpg")
-        temp_path = os.path.join(save_dir, f"{prefix}_original_temp")
-        await (await bot.get_file(message.document.file_id)).download_to_drive(temp_path)
-
-        if is_jpeg:
-            os.rename(temp_path, orig_path)
-        else:
-            with Image.open(temp_path) as img:
-                img.convert("RGB").save(orig_path, "JPEG", quality=90)
-            os.remove(temp_path)
-
-
         if doc.thumbnail:
-            thumb_path = os.path.join(save_dir, f"{prefix}_thumb.jpg")
-            await (await bot.get_file(doc.thumbnail.file_id)).download_to_drive(thumb_path)
-        else:
-            thumb_path = None
+            await download_and_resize(doc.thumbnail)
 
         return CreatedImage(
-            original=orig_path,
-            thumbnail=thumb_path,
-            file_unique_id=doc.file_unique_id
+            file_unique_id=doc.file_unique_id,
+            file_id=doc.file_id,
         )
     else:
         raise ValueError("Message does not contain a valid image.")
