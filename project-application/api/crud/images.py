@@ -3,18 +3,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import Sequence
 
+from sqlalchemy.orm import selectinload
+
 from core.models import Image
 from core.schemas.image import ImageUpdate
 from core.schemas.user import UserCreate
 
 
 async def get_all_images(session: AsyncSession) -> Sequence[Image]:
-    statement = select(Image).order_by(Image.id)
+    statement = (
+        select(Image)
+        .options(selectinload(Image.user))
+        .order_by(Image.id))
     result = await session.scalars(statement)
     return result.all()
 
 async def get_images_by_ids(session: AsyncSession, ids: Sequence[int]) -> Sequence[Image]:
-    statement = select(Image).where(Image.id.in_(ids)).order_by(Image.id)
+    statement = (
+        select(Image)
+        .where(Image.id.in_(ids))
+        .options(selectinload(Image.user))
+        .order_by(Image.id)
+    )
     result = await session.scalars(statement)
     return result.all()
 

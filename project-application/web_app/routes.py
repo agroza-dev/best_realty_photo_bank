@@ -26,6 +26,7 @@ async def read_root():
                 'id': image.id,
                 'path': f"images/{image.local_file_name}_thumb.jpg",
                 'description': image.description,
+                'added_by': image.user.username,
             })
         html_content = render_template('main.j2', {'prepared_images': prepared_images})
 
