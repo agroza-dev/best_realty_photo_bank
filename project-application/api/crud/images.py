@@ -13,6 +13,10 @@ async def get_all_images(session: AsyncSession) -> Sequence[Image]:
     result = await session.scalars(statement)
     return result.all()
 
+async def get_images_by_ids(session: AsyncSession, ids: Sequence[int]) -> Sequence[Image]:
+    statement = select(Image).where(Image.id.in_(ids)).order_by(Image.id)
+    result = await session.scalars(statement)
+    return result.all()
 
 async def create_image(
     session: AsyncSession,
