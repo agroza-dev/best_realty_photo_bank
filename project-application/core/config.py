@@ -1,4 +1,5 @@
 import os
+from dataclasses import field
 from functools import cached_property
 from pathlib import Path
 
@@ -16,14 +17,15 @@ class ApiV1Config(BaseModel):
     prefix: str = "/v1"
     users: str = "/users"
 
-
 class ApiConfig(BaseModel):
     prefix: str = "/api"
     v1: ApiV1Config = ApiV1Config()
 
 class WebAppConfig(BaseModel):
-        URL: str = "https://sharp-impalas-run.loca.lt/"
-        templates: str = os.path.join(BASE_DIR, "web_app/templates")
+    url: str = ""
+    templates: str = os.path.join(BASE_DIR, "web_app/templates")
+    host: str = '0.0.0.0'
+    port: int = 8008
 
 class DatabaseConfig(BaseModel):
     path: str
@@ -38,24 +40,24 @@ class DatabaseConfig(BaseModel):
     def dsn(self) -> str:
         return self.resolve_dsn(BASE_DIR)
 
-    naming_convention: dict[str, str] = {
+    naming_convention: dict[str, str] = field(default_factory=lambda: {
         "ix": "ix_%(column_0_label)s",
         "uq": "uq_%(table_name)s_%(column_0_N_name)s",
         "ck": "ck_%(table_name)s_%(constraint_name)s",
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
-    }
+    })
 
 
 class BotConfig(BaseModel):
     token: str = ''
     templates: str = os.path.join(BASE_DIR, "bot/templates")
-    builder: dict[str, float] = {
+    builder: dict[str, float] = field(default_factory=lambda: {
         'connect': 3.0,
         'read': 10.0,
         'write': 10.0,
         'pool': 2.0,
-    }
+    })
 
 class ImageConfig(BaseModel):
     path: str = os.path.join(BASE_DIR, "var/images")
@@ -65,7 +67,7 @@ class LoggerConfig(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(os.path.join(BASE_DIR, ".env.template"), os.path.join(BASE_DIR, ".env")),
+        env_file=(os.path.join(BASE_DIR, ".env"), os.path.join(BASE_DIR, ".env.advanced")),
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__"

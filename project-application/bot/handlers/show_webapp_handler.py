@@ -9,7 +9,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [
             InlineKeyboardButton(
                 text="Открыть webapp",
-                web_app=WebAppInfo(url=settings.web_app.URL)
+                web_app=WebAppInfo(url=settings.web_app.url)
             )
         ]
     ]
