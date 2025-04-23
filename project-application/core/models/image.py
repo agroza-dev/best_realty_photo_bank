@@ -23,6 +23,11 @@ class Image(Base):
     # ID сессии добавления
     session_id: Mapped[str] = mapped_column(String, index=True)
 
+    # изображения забронированы пользователем.
+    booked_by: Mapped[str] = mapped_column(String, nullable=True)
+    # ID сессии бронирования изображений
+    booking_session: Mapped[str] = mapped_column(Text, nullable=True)
+
     # Привязка к пользователю, который добавил фото
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     user: Mapped["User"] = relationship(
