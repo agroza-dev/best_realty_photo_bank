@@ -2,21 +2,18 @@ import os
 from dataclasses import dataclass
 from io import BytesIO
 
-from uuid import uuid4
-
 from telegram import Update, Message, PhotoSize
 from telegram._bot import BT
 from telegram.ext import ContextTypes
 
 from api.crud.images import create_image
 from api.crud.users import get_user_by_tg_id
-from bot.handlers.helper import do_with_retry
 from bot.utils.response import send_response, delete_message
 from bot.utils.templates import render_template
 from core import models
 from core.schemas.image import ImageCreate
 from utils.logger import logger
-from bot import state
+from bot.utils import state
 from core.config import settings
 from PIL import Image
 from telegram.error import TimedOut

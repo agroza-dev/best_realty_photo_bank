@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes
 from bot.utils.response import send_response
 from bot.utils.templates import render_template
 from utils.logger import logger
-from bot import state
+from bot.utils import state
 from uuid import uuid4
 
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
