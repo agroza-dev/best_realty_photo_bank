@@ -13,6 +13,7 @@ from core.schemas.user import UserCreate
 async def get_all_images(session: AsyncSession) -> Sequence[Image]:
     statement = (
         select(Image)
+        .where(Image.is_active == 1)
         .options(selectinload(Image.user))
         .order_by(Image.id))
     result = await session.scalars(statement)
@@ -22,6 +23,16 @@ async def get_images_by_ids(session: AsyncSession, ids: Sequence[int]) -> Sequen
     statement = (
         select(Image)
         .where(Image.id.in_(ids))
+        .options(selectinload(Image.user))
+        .order_by(Image.id)
+    )
+    result = await session.scalars(statement)
+    return result.all()
+
+async def get_images_by_booking_session(session: AsyncSession, booking_session: str) -> Sequence[Image]:
+    statement = (
+        select(Image)
+        .where(Image.booking_session == booking_session)
         .options(selectinload(Image.user))
         .order_by(Image.id)
     )

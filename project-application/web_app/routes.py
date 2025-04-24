@@ -67,8 +67,8 @@ async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_use
 
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm:{session_id}"),
-            InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"not_received:{session_id}")
+            InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
+            InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
         ]
     ])
 

@@ -1,10 +1,11 @@
 import httpx
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from telegram.request import HTTPXRequest
 
 from core.config import settings
 
-from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler, show_webapp_handler
+from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler, show_webapp_handler, \
+    confirm_booking_session_handler, reject_booking_session_handler
 
 if __name__ == "__main__":
     request = HTTPXRequest(
@@ -23,4 +24,6 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
     application.add_handler(CommandHandler("show", show_webapp_handler))
     application.add_handler(MessageHandler(filters.PHOTO | filters.ATTACHMENT, receive_image_handler))
+    application.add_handler(CallbackQueryHandler(confirm_booking_session_handler, pattern=r"^confirm_booking_session:"))
+    application.add_handler(CallbackQueryHandler(reject_booking_session_handler, pattern=r"^reject_booking_session:"))
     application.run_polling()
