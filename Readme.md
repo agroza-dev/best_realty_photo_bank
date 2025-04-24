@@ -20,7 +20,7 @@
 ### 2. Виртуальное окружение
 1. Рекомендуется работать в отдельной вкладке tmux:
     ```bash
-    tmux new -s best_realty_stats_bot
+    tmux new -s best_realty_photo_bank
     ```
 2. Создать окружение с помощью Poetry:
     ```bash
