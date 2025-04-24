@@ -6,9 +6,9 @@ authors = ["a.groza <a.groza.dev@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 fastapi = "^0.115.4"
-uvicorn = {extras = ["standart"], version = "^0.32.0"}
+uvicorn = {extras = ["standart"], version = "^0.34.2"}
 pydantic = {extras = ["email"], version = "^2.9.2"}
 pydantic-settings = "^2.6.1"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
