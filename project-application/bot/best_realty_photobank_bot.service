@@ -8,7 +8,7 @@ Group=root
 WorkingDirectory=/projects/best_realty_photobank/project-application
 Restart=on-failure
 RestartSec=5s
-ExecStart=/root/.cache/pypoetry/virtualenvs/my_new_service_env/bin/python -m bot/main.py
+ExecStart=/root/.cache/pypoetry/virtualenvs/my_new_service_env/bin/python -m bot.main
 
 [Install]
 WantedBy=multi-user.target

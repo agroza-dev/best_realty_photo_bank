@@ -53,20 +53,21 @@
         sudo cp project-application/web_app/best_realty_photobank_webapp.service /etc/systemd/system/best_realty_photobank_webapp.service
         ```
 
-3. Исправляем путь к окружению `ExecStart` в соответствие с тем, что сгенерил Poetry
+3. Проставляем правильный путь к проекту в `WorkingDirectory`.
+   4. Исправляем путь к окружению в `ExecStart` достаточно заменить `my_new_service_env` - на то, что сгенерил Poetry при создании окружения
 
-4. Загрузить изменения в systemd:
+5. Загрузить изменения в systemd:
     ```bash
     sudo systemctl daemon-reload
     ```
-5. Запустить сервисы
+6. Запустить сервисы
     ```bash
     sudo systemctl start best_realty_photobank_bot.service
     ```
     ```bash
     sudo systemctl start best_realty_photobank_webapp.service
     ```
-6. (Optional) Чтобы сервис автоматически запускался при перезагрузке системы:
+7. (Optional) Чтобы сервис автоматически запускался при перезагрузке системы:
     ```bash
     sudo systemctl enable service_name.service
     ```
