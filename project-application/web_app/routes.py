@@ -1,17 +1,24 @@
+import io
+from uuid import uuid4
+
 from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import HTMLResponse
 from starlette.responses import RedirectResponse
-from telegram import InputMediaPhoto
+from telegram import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from telegram import Bot
-from api.crud.images import get_all_images, get_images_by_ids
+from telegram.constants import ChatAction
+from telegram.error import TelegramError
+
+from api.crud.images import get_all_images, get_images_by_ids, update_image
+from bot.utils.files import send_file_as_document
 from core import models
 from core.config import settings
+from core.schemas.image import ImageUpdate
 from utils.logger import logger
 from web_app.utils.templates import render_template
 
 # Создаем роутер для HTML страниц
 html_router = APIRouter()
-
 
 
 @html_router.get("/", response_class=HTMLResponse)
@@ -27,6 +34,7 @@ async def read_root():
                 'path': f"images/{image.local_file_name}_thumb.jpg",
                 'description': image.description,
                 'added_by': image.user.username,
+                'is_booked': image.booked_by is not None,
             })
         html_content = render_template('main.j2', {'prepared_images': prepared_images})
 
@@ -39,19 +47,36 @@ async def read_root():
 
 @html_router.post("/select_photos")
 async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_user_id: int = Form(...)):
-    logger.info(f'Пользователь {telegram_user_id} выбрал фото: {selected_photos_ids}')
+    logger.info(f'Пользователь {telegram_user_id} решил забронировать фото: {selected_photos_ids}')
 
-    images =  await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
-    paths = []
-    for image in images:
-        paths.append(f"{settings.images.path}/{image.local_file_name}_original.jpg")
+    session_id = uuid4().hex
 
-    logger.info(f"Generated paths: {paths}")
-
-    media = [InputMediaPhoto(open(path, 'rb')) for path in paths]
+    images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
 
     bot = Bot(token=settings.bot.token)
-    await bot.send_media_group(chat_id=telegram_user_id, media=media)
+    for image in images:
+        image_update = ImageUpdate(booked_by=telegram_user_id, booking_session=session_id)
+
+        await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
+        await send_file_as_document(
+            bot=bot,
+            chat_id=telegram_user_id,
+            file_id=image.file_id,
+            filename=f"{image.local_file_name}.jpg"
+        )
+
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm:{session_id}"),
+            InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"not_received:{session_id}")
+        ]
+    ])
+
+    await bot.send_message(
+        chat_id=telegram_user_id,
+        text="Фотографии забронированы, нужно подтвердить действие!",
+        reply_markup=keyboard
+    )
 
     return RedirectResponse(url="/", status_code=303)
 

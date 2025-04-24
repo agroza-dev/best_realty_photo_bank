@@ -40,10 +40,16 @@ async def create_image(
 
 async def update_image(
     session: AsyncSession,
-    image: Image,
+    image_id: int,
     image_update: ImageUpdate
 ) -> Image:
+    image = await session.get(Image, image_id)
+    if image is None:
+        raise ValueError(f"Image with id {image_id} not found")
+
     for name, value in image_update.model_dump(exclude_unset=True).items():
         setattr(image, name, value)
+
     await session.commit()
+    await session.refresh(image)
     return image

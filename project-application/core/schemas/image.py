@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -23,6 +24,12 @@ class ImageRead(ImageBase):
 
 
 class ImageUpdate(ImageBase):
-    is_active: bool
-    hidden_by_id: datetime | None
-    hidden_at: datetime | None
+    file_unique_id: Optional[str] = None
+    local_file_name: Optional[str] = None
+    description: Optional[str] = None
+    user_id: Optional[int] = None
+    is_active: Optional[bool] = None
+    hidden_by_id: Optional[int] = None
+    hidden_at: Optional[datetime] = None
+    booked_by: Optional[int] = None
+    booking_session: Optional[str] = None
