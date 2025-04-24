@@ -1,0 +1,14 @@
+[Unit]
+Description=Best Realty photobank webapp
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/projects/best_realty_photobank/project-application
+Restart=on-failure
+RestartSec=5s
+ExecStart=/root/.cache/pypoetry/virtualenvs/my_new_service_env/bin/python -m web_app/main.py
+
+[Install]
+WantedBy=multi-user.target
