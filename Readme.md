@@ -35,7 +35,7 @@
 1. Убедиться что запускаешь миграции из директории `project-application`, где в корне лежит `alembic.ini`
 2. Выполните миграцию базы данных:
     ```bash
-    alembic upgrade head`
+    alembic upgrade head
     ```
 
 ### 4. Настройка системных сервисов
