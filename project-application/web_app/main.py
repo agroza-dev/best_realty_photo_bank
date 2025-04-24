@@ -19,8 +19,8 @@ app.include_router(api_router)
 if __name__ == "__main__":
     logger.info("Initializing FastAPI server...")
     uvicorn.run(
-        "main:app",
+        "web_app.main:app",
         host=settings.web_app.host,
         port=settings.web_app.port,
-        reload=True
+        reload=False
     )
