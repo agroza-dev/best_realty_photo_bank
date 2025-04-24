@@ -81,7 +81,8 @@
                         <span class="mdi--account-eye"></span>
                     {% endif %}
                     <span class="user_name">@{{ image.added_by }}</span>
-                    {% if image.description %} - <span class="description">{{ image.description }}</span></div>{% endif %}
+                    {% if image.description %} - <span class="description">{{ image.description }}</span>{% endif %}
+                </div>
                 <input type="checkbox" name="selected_photos_ids" value="{{ image.id }}">
             </div>
         {% endfor %}
