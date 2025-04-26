@@ -1,5 +1,6 @@
 import httpx
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
+from telegram import BotCommand
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, Application
 from telegram.request import HTTPXRequest
 
 from core.config import settings
@@ -19,11 +20,21 @@ if __name__ == "__main__":
         }
     )
 
-    application = ApplicationBuilder().token(settings.bot.token).request(request).build()
+
+    async def set_commands(app: Application):
+        await app.bot.set_my_commands([
+            BotCommand(command="start", description="Запустить/Перезапустить бота"),
+            BotCommand(command="add_photos", description="Включить режим добавления фотографий"),
+            BotCommand(command="show", description="Показать кнопку webapp"),
+        ])
+
+    application = ApplicationBuilder().token(settings.bot.token).request(request).post_init(set_commands).build()
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
     application.add_handler(CommandHandler("show", show_webapp_handler))
     application.add_handler(MessageHandler(filters.PHOTO | filters.ATTACHMENT, receive_image_handler))
     application.add_handler(CallbackQueryHandler(confirm_booking_session_handler, pattern=r"^confirm_booking_session:"))
     application.add_handler(CallbackQueryHandler(reject_booking_session_handler, pattern=r"^reject_booking_session:"))
+
+
     application.run_polling()
