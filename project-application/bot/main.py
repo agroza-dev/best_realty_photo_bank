@@ -1,6 +1,6 @@
 import httpx
-from telegram import BotCommand
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, Application
+from telegram import BotCommand, Bot
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, Application, PicklePersistence
 from telegram.request import HTTPXRequest
 
 from core.config import settings
@@ -22,13 +22,22 @@ if __name__ == "__main__":
 
 
     async def set_commands(app: Application):
-        await app.bot.set_my_commands([
+        bot: Bot = app.bot  # Подчеркивает потому, что bot - это @cached_property(создается на лету), но почему-то явно не описан в Application.
+        await bot.set_my_commands([
             BotCommand(command="start", description="Запустить/Перезапустить бота"),
             BotCommand(command="add_photos", description="Включить режим добавления фотографий"),
             BotCommand(command="show", description="Показать кнопку webapp"),
         ])
 
-    application = ApplicationBuilder().token(settings.bot.token).request(request).post_init(set_commands).build()
+    persistence = PicklePersistence(filepath=settings.db.persistence)
+
+    application = (ApplicationBuilder()
+                   .token(settings.bot.token)
+                   .request(request)
+                   .post_init(set_commands)
+                   .persistence(persistence)
+                   .build()
+    )
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
     application.add_handler(CommandHandler("show", show_webapp_handler))
