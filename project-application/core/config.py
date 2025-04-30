@@ -31,6 +31,7 @@ class DatabaseConfig(BaseModel):
     path: str
     echo: bool = False
     echo_pool: bool = False
+    persistence: str = os.path.join(BASE_DIR, "var/db/persistence.pkl")
 
     def resolve_dsn(self, base_dir: Path) -> str:
         return f"sqlite+aiosqlite:///{(base_dir / self.path).resolve()}"
