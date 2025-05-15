@@ -4,6 +4,7 @@ from .receive_image_handler import handler as receive_image_handler
 from .show_webapp_handler import handler as show_webapp_handler
 from .confirm_booking_session_handler import handler as confirm_booking_session_handler
 from .reject_booking_session_handler import handler as reject_booking_session_handler
+from .error_handler import handler as error_handler
 
 __all__ = [
     "start_handler",
@@ -12,4 +13,5 @@ __all__ = [
     "show_webapp_handler",
     "confirm_booking_session_handler",
     "reject_booking_session_handler",
+    "error_handler",
 ]

@@ -45,7 +45,8 @@ async def read_root():
         raise HTTPException(status_code=500, detail=f"Error processing: {str(e)}")
 
 
-@html_router.post("/select_photos")
+api_router = APIRouter()
+@api_router.post("/select_photos")
 async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_user_id: int = Form(...)):
     logger.info(f'Пользователь {telegram_user_id} решил забронировать фото: {selected_photos_ids}')
 
@@ -80,4 +81,3 @@ async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_use
 
     return RedirectResponse(url="/", status_code=303)
 
-api_router = APIRouter()
