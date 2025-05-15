@@ -20,6 +20,6 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         image_update = ImageUpdate(booked_by=None, booking_session=None, is_active=False, hidden_at=datetime.now(timezone.utc), hidden_by_id=update.effective_user.id)
         await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
 
-    await delete_message(update, update.effective_message.message_id)
+    await delete_message(update.effective_message.message_id, update, context)
 
     await send_response(update, context, response=render_template("confirm_booking_session.j2"))

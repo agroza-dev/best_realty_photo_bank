@@ -7,6 +7,9 @@ from utils.logger import logger
 
 
 async def do_with_retry(func, *args, retries=3, delay=2, label='unknown', **kwargs):
+
+    last_exception = None
+
     for attempt in range(1, retries + 1):
         try:
             start_time = time.perf_counter()
@@ -21,3 +24,11 @@ async def do_with_retry(func, *args, retries=3, delay=2, label='unknown', **kwar
             else:
                 logger.error(f"[{label}] Failed to resolve after {retries} attempts.")
                 raise e
+        except Exception as e:
+            logger.error(f"[{label}] Неизвестное исключение {e}.")
+            last_exception = e
+            break
+
+    # Пробрасываем последнее исключение
+    if last_exception:
+        raise last_exception

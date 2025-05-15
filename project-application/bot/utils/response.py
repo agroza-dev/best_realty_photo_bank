@@ -2,9 +2,11 @@ from typing import cast
 
 import telegram
 from telegram import Chat, InlineKeyboardMarkup, Update, InputMediaPhoto, Message
+from telegram.error import BadRequest
 from telegram.ext import ContextTypes
 
 from bot.handlers.helper import do_with_retry
+from utils.logger import logger
 
 
 async def send_response(
@@ -25,8 +27,22 @@ async def send_response(
     return await do_with_retry(context.bot.send_message, **args, label='send_response')
 
 
-async def delete_message(update: Update, message_id):
-    return await do_with_retry(update.effective_chat.delete_message, message_id, label='delete_message')
+async def delete_message(message_id, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        await do_with_retry(update.effective_chat.delete_message, message_id, label='delete_message')
+
+    except BadRequest as e:
+        if "Message can't be deleted for everyone" in str(e):
+            logger.warning(f"[delete_message] Сообщение {message_id} не может быть удалено: {e} очищаем куку.")
+            context.user_data['last_message_id'] = False
+
+        else:
+            logger.error(f"[delete_message] BadRequest: {e}")
+            raise
+
+    except Exception as e:
+        logger.exception(f"[delete_message] Необработанное исключение: {e}")
+        raise
 
 
 async def send_photo(

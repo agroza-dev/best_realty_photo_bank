@@ -35,7 +35,7 @@ async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
     if last_message_id is not False:
         logger.info(f"Try to delete message: {last_message_id}")
         try:
-            await delete_message(update, last_message_id)
+            await delete_message(last_message_id, update, context)
         except TimedOut:
             logger.warning(f"Timed out while deleting message: {last_message_id}")
 
