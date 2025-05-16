@@ -1,0 +1,33 @@
+{% extends "layouts/default.j2" %}
+
+{% block js_scripts %}
+    <script src="/templates/main/script.js"></script>
+{% endblock %}
+
+{% block css_scripts %}
+    <link rel="stylesheet" href="/templates/main/style.css">
+{% endblock %}
+
+{% block body %}
+    <h2 style="text-align: center;">Выберите фотографии1</h2>
+    <form action="/select_photos" method="post" class="images_form">
+        <div class="images_wrapper">
+        {% for image in prepared_images %}
+            <div class="image_container">
+                <img src="{{ image.path }}" alt="Photo">
+                <div class="image_description">
+                    {% if image.is_booked %}
+                        <span class="mdi--account-eye"></span>
+                    {% endif %}
+                    <span class="user_name">@{{ image.added_by }}</span>
+                    {% if image.description %} - <span class="description">{{ image.description }}</span>{% endif %}
+                </div>
+                <input type="checkbox" name="selected_photos_ids" value="{{ image.id }}">
+            </div>
+        {% endfor %}
+        </div>
+        <div class="fixed_button_container">
+            <button type="submit">Подтвердить выбор (<span id="selected-count">0</span>)</button>
+        </div>
+    </form>
+{% endblock %}

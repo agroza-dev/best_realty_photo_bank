@@ -12,6 +12,7 @@ from web_app.routes import api_router, html_router
 app = FastAPI()
 img_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), str(settings.images.path)))
 app.mount("/images", StaticFiles(directory=img_dir), name="images")
+app.mount("/templates", StaticFiles(directory=settings.web_app.templates), name="templates")
 app.include_router(html_router)
 app.include_router(api_router)
 

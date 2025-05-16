@@ -36,7 +36,7 @@ async def read_root():
                 'added_by': image.user.username,
                 'is_booked': image.booked_by is not None,
             })
-        html_content = render_template('main.j2', {'prepared_images': prepared_images})
+        html_content = render_template('main/template.j2', {'prepared_images': prepared_images})
 
         return HTMLResponse(content=html_content, status_code=200)
     except Exception as e:
