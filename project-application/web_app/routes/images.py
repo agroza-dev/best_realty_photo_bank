@@ -4,10 +4,8 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import HTMLResponse
 from starlette.responses import RedirectResponse
-from telegram import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import Bot
-from telegram.constants import ChatAction
-from telegram.error import TelegramError
 
 from api.crud.images import get_all_images, get_images_by_ids, update_image
 from bot.utils.files import send_file_as_document
@@ -17,9 +15,9 @@ from core.schemas.image import ImageUpdate
 from utils.logger import logger
 from web_app.utils.templates import render_template
 
-# Создаем роутер для HTML страниц
 html_router = APIRouter()
 
+api_router = APIRouter()
 
 @html_router.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -45,7 +43,7 @@ async def read_root():
         raise HTTPException(status_code=500, detail=f"Error processing: {str(e)}")
 
 
-api_router = APIRouter()
+
 @api_router.post("/select_photos")
 async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_user_id: int = Form(...)):
     logger.info(f'Пользователь {telegram_user_id} решил забронировать фото: {selected_photos_ids}')
