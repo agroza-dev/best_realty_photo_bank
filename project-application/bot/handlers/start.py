@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes
 
 from api.crud.users import get_user_by_tg_id, create_user
 from bot.utils.response import send_response
-from bot.utils.templates import render_template
+from utils.templates import render_bot_template
 from core.models import db_helper, User
 from core.schemas.user import UserCreate
 from utils.logger import logger
@@ -28,4 +28,4 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # TODO: do some error
             logger.error(f"Error on create user {user_id} => {message.from_user.username}")
 
-    await send_response(update, context, response=render_template("start.j2"))
+    await send_response(update, context, response=render_bot_template("start.j2"))

@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes
 
 from api.crud.images import get_images_by_booking_session, update_image
 from bot.utils.response import send_response, delete_message
-from bot.utils.templates import render_template
+from utils.templates import render_bot_template
 from core import models
 from core.schemas.image import ImageUpdate
 
@@ -20,4 +20,4 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await delete_message(update.effective_message.message_id, update, context)
 
-    await send_response(update, context, response=render_template("reject_booking_session.j2"))
+    await send_response(update, context, response=render_bot_template("reject_booking_session.j2"))

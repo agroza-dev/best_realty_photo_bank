@@ -1,4 +1,3 @@
-import io
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Form
@@ -13,7 +12,7 @@ from core import models
 from core.config import settings
 from core.schemas.image import ImageUpdate
 from utils.logger import logger
-from web_app.utils.templates import render_template
+from utils.templates import render_web_template
 
 html_router = APIRouter()
 
@@ -34,7 +33,7 @@ async def read_root():
                 'added_by': image.user.username,
                 'is_booked': image.booked_by is not None,
             })
-        html_content = render_template('main/template.j2', {'prepared_images': prepared_images})
+        html_content = render_web_template('main/template.j2', {'prepared_images': prepared_images})
 
         return HTMLResponse(content=html_content, status_code=200)
     except Exception as e:

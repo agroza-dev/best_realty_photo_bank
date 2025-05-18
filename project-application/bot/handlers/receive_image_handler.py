@@ -9,7 +9,7 @@ from telegram.ext import ContextTypes
 from api.crud.images import create_image
 from api.crud.users import get_user_by_tg_id
 from bot.utils.response import send_response, delete_message
-from bot.utils.templates import render_template
+from utils.templates import render_bot_template
 from core import models
 from core.schemas.image import ImageCreate
 from utils.logger import logger
@@ -44,7 +44,7 @@ async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
         sent_message = await send_response(
             update,
             context,
-            response=render_template("receive_image.j2", {'status': 'in_progress'})
+            response=render_bot_template("receive_image.j2", {'status': 'in_progress'})
         )
         logger.info(f"Sent message {sent_message}")
         context.user_data['last_message_id'] = sent_message.message_id
@@ -61,7 +61,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_response(
             update,
             context,
-            response=render_template("receive_image.j2", {'status': 'user_not_found'})
+            response=render_bot_template("receive_image.j2", {'status': 'user_not_found'})
         )
         return None
 
@@ -74,7 +74,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_response(
             update,
             context,
-            response=render_template("receive_image.j2", {'status': 'wrong_state'})
+            response=render_bot_template("receive_image.j2", {'status': 'wrong_state'})
         )
         return
 
@@ -109,7 +109,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.error(f"Error on create image {new_image_create} => {message.from_user.username}")
             # TODO: Send error message?
 
-        response_message = render_template(
+        response_message = render_bot_template(
             "receive_image.j2",
             {'status': 'images_was_received', 'session_image_count': context.user_data.get('session_image_count', 0)}
         )

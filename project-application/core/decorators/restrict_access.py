@@ -5,7 +5,7 @@ from telegram.ext import ContextTypes
 from typing import Callable
 
 from api.crud.users import get_user_by_tg_id
-from bot.utils.templates import render_template
+from utils.templates import render_common_template
 from core.models import db_helper
 
 
@@ -31,7 +31,7 @@ def restrict_access(action: str):
             user_id = 'unknown'
             try:
                 if update.effective_user is None:
-                    await update.message.reply_text(render_template("error_user_not_found.j2"))
+                    await update.message.reply_text(render_common_template("error_user_not_found.j2"))
                     return
 
                 user_id = update.effective_user.id
@@ -39,18 +39,18 @@ def restrict_access(action: str):
                 print(user)
 
                 if user is None:
-                    await update.message.reply_text(render_template("error_user_not_found.j2"))
+                    await update.message.reply_text(render_common_template("error_user_not_found.j2"))
                     return
 
                 if user.is_deleted:
-                    await update.message.reply_text(render_template("error_user_is_deactivated.j2"))
+                    await update.message.reply_text(render_common_template("error_user_is_deactivated.j2"))
                     return
 
                 if action == "upload" and not user.can_upload:
-                    await update.message.reply_text(render_template("error_user_can_not_upload.j2"))
+                    await update.message.reply_text(render_common_template("error_user_can_not_upload.j2"))
                     return
                 if action == "receive" and not user.can_receive:
-                    await update.message.reply_text(render_template("error_user_can_not_receive.j2"))
+                    await update.message.reply_text(render_common_template("error_user_can_not_receive.j2"))
                     return
 
                 return await handler(update, context)

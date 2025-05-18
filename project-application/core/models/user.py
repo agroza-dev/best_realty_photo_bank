@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core.models.image import Image
 
-from .base import Base
+from core.models.base import Base
 
 
 class User(Base):

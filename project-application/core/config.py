@@ -11,7 +11,7 @@ BASE_DIR: Path = Path(__file__).resolve().parent.parent
 class RunApp(BaseModel):
     host: str = '0.0.0.0'
     port: int = 8000
-
+    templates: str = os.path.join(BASE_DIR, "templates/common")
 
 class ApiV1Config(BaseModel):
     prefix: str = "/v1"
@@ -23,7 +23,7 @@ class ApiConfig(BaseModel):
 
 class WebAppConfig(BaseModel):
     url: str = ""
-    templates: str = os.path.join(BASE_DIR, "web_app/templates")
+    templates: str = os.path.join(BASE_DIR, "templates/web")
     host: str = '0.0.0.0'
     port: int = 8008
 
@@ -52,7 +52,7 @@ class DatabaseConfig(BaseModel):
 
 class BotConfig(BaseModel):
     token: str = ''
-    templates: str = os.path.join(BASE_DIR, "bot/templates")
+    templates: str = os.path.join(BASE_DIR, "templates/bot")
     builder: dict[str, float] = field(default_factory=lambda: {
         'connect': 3.0,
         'read': 10.0,
