@@ -40,6 +40,9 @@ class User(Base):
         back_populates="hidden_by", viewonly=True,
         foreign_keys="[Image.hidden_by_id]",
     )
+    can_upload: Mapped[bool] = mapped_column(Integer, default=1, server_default=text("1"))
+    can_receive: Mapped[bool] = mapped_column(Integer, default=1, server_default=text("1"))
+
 
     def __repr__(self) -> str:
         return f"<User tg_id={self.telegram_id} username={self.username}>"

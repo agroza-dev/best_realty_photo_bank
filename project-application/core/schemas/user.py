@@ -10,6 +10,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     first_name: str | None
     last_name: str | None
+    is_deleted: int
+    can_upload: int
+    can_receive: int
 
 
 class UserRead(UserBase):
@@ -17,5 +20,7 @@ class UserRead(UserBase):
     first_name: str | None
     last_name: str | None
     is_deleted: int
+    can_upload: int
+    can_receive: int
     created_at: datetime | None
     updated_at: datetime | None
