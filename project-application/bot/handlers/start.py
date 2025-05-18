@@ -19,6 +19,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             telegram_id=message.from_user.id,
             last_name=message.from_user.last_name,
             first_name=message.from_user.first_name,
+            is_deleted=1,
+            can_upload=0,
+            can_receive=0,
         )
         new_user: User = await db_helper.execute_with_session_scope(create_user, new_user_create)
         if new_user is None:
