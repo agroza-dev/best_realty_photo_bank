@@ -161,6 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 /project-application/var/db/*.db
+/project-application/var/db/*.pkl
 /project-application/var/logs/*.log.*
 /project-application/var/images/*
 !/project-application/var/images/.gitkeep
