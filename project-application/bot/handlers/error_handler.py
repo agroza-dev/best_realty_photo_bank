@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from core.decorators.restrict_access import AccessRestrictionError
+from bot.decorators.restrict_access import AccessRestrictionError
 from utils.logger import logger
 
 
