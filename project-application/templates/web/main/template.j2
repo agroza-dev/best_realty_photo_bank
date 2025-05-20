@@ -1,15 +1,15 @@
 {% extends "layouts/default.j2" %}
 
 {% block js_scripts %}
-    <script src="/templates/main/script.js"></script>
+    <script src="{{ '/templates/main/script.js' | autoversion }}"></script>
 {% endblock %}
 
 {% block css_scripts %}
-    <link rel="stylesheet" href="/templates/main/style.css">
+    <link rel="stylesheet" href="{{ '/templates/main/style.css' | autoversion }}">
 {% endblock %}
 
 {% block body %}
-    <h2 style="text-align: center;">Выберите фотографии1</h2>
+    <h2 style="text-align: center;">Выберите фотографии</h2>
     <form action="/select_photos" method="post" class="images_form">
         <div class="images_wrapper">
         {% for image in prepared_images %}
