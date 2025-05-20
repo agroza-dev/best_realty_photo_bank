@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const telegram = window.Telegram.WebApp;
-    const user = telegram.initDataUnsafe?.user;
-
-    if (user) {
+    const initData = telegram.initData;
+    const form = document.querySelector('form');
+    if (initData && form) {
         const input = document.createElement('input');
         input.type = 'hidden';
-        input.name = 'telegram_user_id';
-        input.value = user.id;
-        document.querySelector('form').appendChild(input);
+        input.name = 'init_data';
+        input.value = initData;
+        form.appendChild(input);
     }
     const containers = document.querySelectorAll('.image_container');
     const counter = document.getElementById('selected-count');

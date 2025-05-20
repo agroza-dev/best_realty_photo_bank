@@ -1,6 +1,8 @@
+import urllib.parse
+from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Form
+from fastapi import APIRouter, HTTPException, Form, Depends
 from fastapi.responses import HTMLResponse
 from starlette.responses import RedirectResponse
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,9 +12,11 @@ from api.crud.images import get_all_images, get_images_by_ids, update_image
 from bot.utils.files import send_file_as_document
 from core import models
 from core.config import settings
+from core.models import User
 from core.schemas.image import ImageUpdate
 from utils.logger import logger
 from utils.templates import render_web_template
+from web_app.dependency.restrict_access import check_can_upload
 
 html_router = APIRouter()
 
@@ -21,7 +25,6 @@ api_router = APIRouter()
 @html_router.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
-
         images = await models.db_helper.execute_with_session(get_all_images)
         prepared_images = []
 
@@ -41,40 +44,40 @@ async def read_root():
         logger.error(f"Error processing request: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing: {str(e)}")
 
-
-
 @api_router.post("/select_photos")
-async def select_photos(selected_photos_ids: list[str] = Form(...), telegram_user_id: int = Form(...)):
-    logger.info(f'Пользователь {telegram_user_id} решил забронировать фото: {selected_photos_ids}')
+async def select_photos(
+        selected_photos_ids: Annotated[list[str], Form(...)],
+        user: Annotated[User, Depends(check_can_upload)],
+):
+    print(user)
+    print(selected_photos_ids)
+    logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
 
     session_id = uuid4().hex
 
     images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
-
+    print(images)
     bot = Bot(token=settings.bot.token)
     for image in images:
-        image_update = ImageUpdate(booked_by=telegram_user_id, booking_session=session_id)
+        image_update = ImageUpdate(booked_by=user.telegram_id, booking_session=session_id)
 
         await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
         await send_file_as_document(
             bot=bot,
-            chat_id=telegram_user_id,
+            chat_id=user.telegram_id,
             file_id=image.file_id,
             filename=f"{image.local_file_name}.jpg"
         )
 
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
-            InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
-        ]
-    ])
-
-    await bot.send_message(
-        chat_id=telegram_user_id,
-        text="Фотографии забронированы, нужно подтвердить действие!",
-        reply_markup=keyboard
-    )
+        await bot.send_message(
+            chat_id=user.telegram_id,
+            text="Фотографии забронированы, нужно подтвердить действие!",
+            reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
+                    InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
+                ]
+            ])
+        )
 
     return RedirectResponse(url="/", status_code=303)
 

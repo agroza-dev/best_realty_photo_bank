@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Ошибка</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+        text-align: center;
+        color: #000; /* по умолчанию — для светлой темы */
+      }
+
+      h1 {
+        color: #b30000;
+      }
+
+      p {
+        margin-top: 1rem;
+        font-size: 1.2rem;
+        color: #333;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          color: #eee;
+        }
+
+        h1 {
+          color: #ff6666;
+        }
+
+        p {
+          color: #ccc;
+        }
+      }
+    </style>
+</head>
+<body>
+    <h1>Произошла ошибка</h1>
+    <p>{{ message }}</p>
+    <p>Код: {{ code }}</p>
+</body>
+</html>
