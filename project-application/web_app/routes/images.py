@@ -1,8 +1,7 @@
-import urllib.parse
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Form, Depends
+from fastapi import APIRouter, HTTPException, Form, Depends, status
 from fastapi.responses import HTMLResponse
 from starlette.responses import RedirectResponse
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
@@ -38,11 +37,11 @@ async def read_root():
             })
         html_content = render_web_template('main/template.j2', {'prepared_images': prepared_images})
 
-        return HTMLResponse(content=html_content, status_code=200)
+        return HTMLResponse(content=html_content, status_code=status.HTTP_200_OK)
     except Exception as e:
         # TODO: cлать алярм в sentry или еще куда-то
         logger.error(f"Error processing request: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error processing: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error processing: {str(e)}")
 
 @api_router.post("/select_photos")
 async def select_photos(
@@ -69,15 +68,15 @@ async def select_photos(
             filename=f"{image.local_file_name}.jpg"
         )
 
-        await bot.send_message(
-            chat_id=user.telegram_id,
-            text="Фотографии забронированы, нужно подтвердить действие!",
-            reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
-                    InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
-                ]
-            ])
-        )
+    await bot.send_message(
+        chat_id=user.telegram_id,
+        text="Фотографии забронированы, нужно подтвердить действие!",
+        reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
+                InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
+            ]
+        ])
+    )
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
