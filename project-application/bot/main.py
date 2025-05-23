@@ -1,5 +1,4 @@
 import httpx
-from telegram import BotCommand, Bot
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler, Application, PicklePersistence
 from telegram.request import HTTPXRequest
 
@@ -22,14 +21,6 @@ if __name__ == "__main__":
         }
     )
 
-
-    async def set_commands(app: Application):
-        bot: Bot = app.bot  # Подчеркивает потому, что bot - это @cached_property(создается на лету), но почему-то явно не описан в Application.
-        await bot.set_my_commands([
-            BotCommand(command="start", description="Запустить/Перезапустить бота"),
-            BotCommand(command="add_photos", description="Включить режим добавления фотографий"),
-            BotCommand(command="show", description="Показать кнопку webapp"),
-        ])
 
     persistence = PicklePersistence(filepath=settings.db.persistence)
 
