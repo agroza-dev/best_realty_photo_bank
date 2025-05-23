@@ -48,14 +48,12 @@ async def select_photos(
         selected_photos_ids: Annotated[list[str], Form(...)],
         user: Annotated[User, Depends(check_can_upload)],
 ):
-    print(user)
-    print(selected_photos_ids)
     logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
 
     session_id = uuid4().hex
 
     images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
-    print(images)
+
     bot = Bot(token=settings.bot.token)
     for image in images:
         image_update = ImageUpdate(booked_by=user.telegram_id, booking_session=session_id)

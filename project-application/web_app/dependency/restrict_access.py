@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import json
 import urllib.parse
-from fastapi import Form, HTTPException, Depends, status
+from fastapi import Form, HTTPException, Depends, status, Request
 from typing import Annotated
 
 from api.crud.users import get_user_by_tg_id
