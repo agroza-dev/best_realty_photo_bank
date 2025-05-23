@@ -12,6 +12,7 @@ class RunApp(BaseModel):
     host: str = '0.0.0.0'
     port: int = 8000
     templates: str = os.path.join(BASE_DIR, "templates/common")
+    super_admin: int = 999999999
 
 class ApiV1Config(BaseModel):
     prefix: str = "/v1"

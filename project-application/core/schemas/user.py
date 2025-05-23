@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -14,6 +15,15 @@ class UserCreate(UserBase):
     is_admin: int
     can_upload: int
     can_receive: int
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    is_deleted: Optional[int] = None
+    is_admin: Optional[int] = None
+    can_upload: Optional[int] = None
+    can_receive: Optional[int] = None
 
 
 class UserRead(UserBase):

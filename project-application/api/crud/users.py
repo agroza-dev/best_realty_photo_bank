@@ -28,3 +28,18 @@ async def create_user(
     session.add(user)
     await session.commit()
     return user
+
+async def update_user(
+    session: AsyncSession,
+    user_id: int,
+    user_update: UserUpdate
+) -> User:
+    user = await session.get(User, user_id)
+    if user is None:
+        raise ValueError(f"User with id {user_id} not found")
+    for name, value in user_update.model_dump(exclude_unset=True).items():
+        setattr(user, name, value)
+
+    await session.commit()
+    await session.refresh(user)
+    return user

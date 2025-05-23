@@ -5,6 +5,7 @@ from .show_webapp_handler import handler as show_webapp_handler
 from .confirm_booking_session_handler import handler as confirm_booking_session_handler
 from .reject_booking_session_handler import handler as reject_booking_session_handler
 from .error_handler import handler as error_handler
+from .make_user_admin_handler import handler as make_user_admin_handler
 
 __all__ = [
     "start_handler",
@@ -14,4 +15,5 @@ __all__ = [
     "confirm_booking_session_handler",
     "reject_booking_session_handler",
     "error_handler",
+    "make_user_admin_handler",
 ]
