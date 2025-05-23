@@ -42,6 +42,7 @@ class User(Base):
     )
     can_upload: Mapped[bool] = mapped_column(Integer, default=1, server_default=text("1"))
     can_receive: Mapped[bool] = mapped_column(Integer, default=1, server_default=text("1"))
+    is_admin: Mapped[bool] = mapped_column(Integer, default=0, server_default=text("0"))
 
 
     def __repr__(self) -> str:
