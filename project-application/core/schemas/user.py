@@ -12,7 +12,6 @@ class UserCreate(UserBase):
     first_name: str | None
     last_name: str | None
     is_deleted: int
-    is_admin: int
     can_upload: int
     can_receive: int
 

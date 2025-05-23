@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence
 
 from core.models import User
-from core.schemas.user import UserCreate
+from core.schemas.user import UserCreate, UserUpdate
 
 
 async def get_all_users(session: AsyncSession) -> Sequence[User]:

@@ -19,9 +19,10 @@ class AccessRestrictionError(Exception):
 
 
 class Restrictions:
-    full = 'is_deleted'
-    upload = 'upload'
-    receive = 'receive'
+    is_deleted = 'is_deleted'
+    upload = 'can_upload'
+    receive = 'can_receive'
+    is_admin = 'is_admin'
 
 
 def restrict_access(action: str):
@@ -46,10 +47,10 @@ def restrict_access(action: str):
                     await update.message.reply_text(render_common_template("error_user_is_deactivated.j2"))
                     return
 
-                if action == "upload" and not user.can_upload:
+                if action == Restrictions.upload and not user.can_upload:
                     await update.message.reply_text(render_common_template("error_user_can_not_upload.j2"))
                     return
-                if action == "receive" and not user.can_receive:
+                if action == Restrictions.receive and not user.can_receive:
                     await update.message.reply_text(render_common_template("error_user_can_not_receive.j2"))
                     return
 

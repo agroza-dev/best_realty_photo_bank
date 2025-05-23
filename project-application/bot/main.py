@@ -44,6 +44,7 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
     application.add_handler(CommandHandler("show", show_webapp_handler))
+    application.add_handler(CommandHandler("manage_users", show_users_web_app_handler))
     application.add_handler(MessageHandler(filters.PHOTO | filters.ATTACHMENT, receive_image_handler))
     application.add_handler(CallbackQueryHandler(confirm_booking_session_handler, pattern=r"^confirm_booking_session:"))
     application.add_handler(CallbackQueryHandler(reject_booking_session_handler, pattern=r"^reject_booking_session:"))

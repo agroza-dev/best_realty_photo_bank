@@ -34,6 +34,26 @@ def validate_telegram_init_data(init_data: Annotated[str, Form(...)]) -> dict:
     return auth_data
 
 
+async def get_valid_user_from_query(request: Request) -> User:
+    init_data = request.query_params.get("initData")
+    if not init_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="incomplete_init_user_data")
+
+    auth_data = validate_telegram_init_data(init_data)
+
+    try:
+        user_data = json.loads(auth_data.get("user", "{}"))
+        user_id = user_data["id"]
+    except (KeyError, ValueError):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="invalid_user_data")
+
+    user = await db_helper.execute_with_session(get_user_by_tg_id, user_id)
+
+    if not user or user.is_deleted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="access_denied")
+
+    return user
+
 async def get_current_user(
     auth_data: Annotated[dict, Depends(validate_telegram_init_data)]
 ) -> User:

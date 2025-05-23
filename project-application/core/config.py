@@ -24,6 +24,7 @@ class ApiConfig(BaseModel):
 
 class WebAppConfig(BaseModel):
     url: str = ""
+    users_url: str = ""
     templates: str = os.path.join(BASE_DIR, "templates/web")
     host: str = '0.0.0.0'
     port: int = 8008
