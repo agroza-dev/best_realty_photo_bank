@@ -15,14 +15,14 @@ from core.models import User
 from core.schemas.image import ImageUpdate
 from utils.logger import logger
 from utils.templates import render_web_template
-from web_app.dependency.restrict_access import check_can_upload
+from web_app.dependency.restrict_access import check_can_receive
 
 html_router = APIRouter()
 
 api_router = APIRouter()
 
 @html_router.get("/", response_class=HTMLResponse)
-async def read_root():
+async def read_root(user = Depends(check_can_receive)):
     try:
         images = await models.db_helper.execute_with_session(get_all_images)
         prepared_images = []
@@ -46,7 +46,7 @@ async def read_root():
 @api_router.post("/select_photos")
 async def select_photos(
         selected_photos_ids: Annotated[list[str], Form(...)],
-        user: Annotated[User, Depends(check_can_upload)],
+        user = Depends(check_can_receive),
 ):
     logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
 
@@ -76,5 +76,5 @@ async def select_photos(
         ])
     )
 
-    return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    return RedirectResponse(url=settings.web_app.url, status_code=status.HTTP_303_SEE_OTHER)
 

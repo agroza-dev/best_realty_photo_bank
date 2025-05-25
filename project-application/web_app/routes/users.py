@@ -11,14 +11,14 @@ from core.models import db_helper
 from core.schemas.user import UserUpdate
 from utils.logger import logger
 from utils.templates import render_web_template
-from web_app.dependency.restrict_access import get_valid_user_from_query
+from web_app.dependency.restrict_access import check_is_admin
 
 html_router = APIRouter()
 
 api_router = APIRouter()
 
 @html_router.get("/manage_users", response_class=HTMLResponse)
-async def read_users(user = Depends(get_valid_user_from_query)):
+async def read_users(user = Depends(check_is_admin)):
     try:
         users = await models.db_helper.execute_with_session(get_all_users)
         html_content = render_web_template('users/template.j2', {"users_list": users})
@@ -36,11 +36,8 @@ class UserUpdateParams(BaseModel):
 async def change_user_flag(
     user_tg_id: int = Path(...),
     payload: UserUpdateParams = Body(...),
-    current_user=Depends(get_valid_user_from_query),
+    current_user=Depends(check_is_admin),
 ):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="insufficient_rights_for_this_action")
-
     target_user = await db_helper.execute_with_session(get_user_by_tg_id, user_tg_id)
 
     if not target_user:
