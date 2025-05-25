@@ -21,7 +21,7 @@ api_router = APIRouter()
 async def read_users(user = Depends(check_is_admin)):
     try:
         users = await models.db_helper.execute_with_session(get_all_users)
-        html_content = render_web_template('users/template.j2', {"users_list": users})
+        html_content = render_web_template('users/template.j2', {"users_list": users, "current_user": user.id})
         return HTMLResponse(content=html_content, status_code=status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
