@@ -5,6 +5,7 @@ from telegram.ext import ContextTypes
 from typing import Callable
 
 from api.crud.users import get_user_by_tg_id
+from bot.utils.response import send_response
 from utils.templates import render_common_template
 from core.models import db_helper
 
@@ -26,6 +27,7 @@ class Restrictions:
 
 
 def restrict_access(action: str):
+    print(action)
     def decorator(handler: Callable):
         @wraps(handler)
         async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -37,21 +39,24 @@ def restrict_access(action: str):
 
                 user_id = update.effective_user.id
                 user = await db_helper.execute_with_session(get_user_by_tg_id, user_id)
-                print(user)
 
                 if user is None:
-                    await update.message.reply_text(render_common_template("error_user_not_found.j2"))
+                    await send_response(update, context, response=render_common_template("error_user_not_found.j2"))
                     return
 
                 if user.is_deleted:
-                    await update.message.reply_text(render_common_template("error_user_is_deactivated.j2"))
+                    await send_response(update, context, response=render_common_template("error_user_is_deactivated.j2"))
                     return
 
                 if action == Restrictions.upload and not user.can_upload:
-                    await update.message.reply_text(render_common_template("error_user_can_not_upload.j2"))
+                    await send_response(update, context, response=render_common_template("error_user_can_not_upload.j2"))
                     return
                 if action == Restrictions.receive and not user.can_receive:
-                    await update.message.reply_text(render_common_template("error_user_can_not_receive.j2"))
+                    await send_response(update, context, response=render_common_template("error_user_can_not_receive.j2"))
+                    return
+
+                if action == Restrictions.is_admin and not user.is_admin:
+                    await send_response(update, context, response=render_common_template("error_user_is_not_admin.j2"))
                     return
 
                 return await handler(update, context)

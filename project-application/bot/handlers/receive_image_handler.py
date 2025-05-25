@@ -8,6 +8,7 @@ from telegram.ext import ContextTypes
 
 from api.crud.images import create_image
 from api.crud.users import get_user_by_tg_id
+from bot.decorators.restrict_access import restrict_access, Restrictions
 from bot.utils.response import send_response, delete_message
 from utils.templates import render_bot_template
 from core import models
@@ -51,7 +52,7 @@ async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
     except TimedOut:
         logger.warning(f"Timed out while sending message: {sent_message}")
 
-
+@restrict_access(Restrictions.upload)
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
 

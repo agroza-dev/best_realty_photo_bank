@@ -4,14 +4,16 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from api.crud.images import get_images_by_booking_session, update_image
+from bot.decorators.restrict_access import restrict_access, Restrictions
 from bot.utils.response import send_response, delete_message
 from utils.templates import render_bot_template
 from core import models
 from core.schemas.image import ImageUpdate
 
-
+@restrict_access(Restrictions.receive)
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    print(query)
     await query.answer()
     booking_session = query.data.split(":")[1]
 

@@ -1,11 +1,11 @@
 from telegram import Update, InlineKeyboardButton, WebAppInfo, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
+from bot.decorators.restrict_access import Restrictions, restrict_access
 from core.config import settings
 
-
+@restrict_access(Restrictions.is_admin)
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(settings.web_app.users_url)
     keyboard = [
         [
             InlineKeyboardButton(
