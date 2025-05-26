@@ -13,6 +13,7 @@ class ImageBase(BaseModel):
 class ImageCreate(ImageBase):
     session_id: str
     file_id: str
+    calculated_hash: str
     pass
 
 
@@ -26,6 +27,7 @@ class ImageRead(ImageBase):
 class ImageUpdate(ImageBase):
     file_unique_id: Optional[str] = None
     local_file_name: Optional[str] = None
+    calculated_hash: Optional[str] = None
     description: Optional[str] = None
     user_id: Optional[int] = None
     is_active: Optional[bool] = None

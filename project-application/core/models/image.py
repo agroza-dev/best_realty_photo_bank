@@ -52,3 +52,5 @@ class Image(Base):
     )
 
     hidden_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    calculated_hash: Mapped[str] = mapped_column(String, nullable=True)
