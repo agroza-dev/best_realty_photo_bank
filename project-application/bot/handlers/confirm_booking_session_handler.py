@@ -13,7 +13,6 @@ from core.schemas.image import ImageUpdate
 @restrict_access(Restrictions.receive)
 async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    print(query)
     await query.answer()
     booking_session = query.data.split(":")[1]
 

@@ -20,13 +20,6 @@ from PIL import Image
 from telegram.error import TimedOut
 
 
-@dataclass
-class CreatedImage:
-    file_unique_id: str
-    file_id: str
-    local_file_name: str
-
-
 async def before_process(context: ContextTypes.DEFAULT_TYPE, update: Update):
     message_media_group_id = update.message.media_group_id
     context.user_data['session_media_group'] = message_media_group_id

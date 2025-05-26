@@ -6,6 +6,7 @@ from typing import Callable
 
 from api.crud.users import get_user_by_tg_id
 from bot.utils.response import send_response
+from core.models.static import Restrictions
 from utils.templates import render_common_template
 from core.models import db_helper
 
@@ -19,15 +20,7 @@ class AccessRestrictionError(Exception):
         super().__init__(self.message)
 
 
-class Restrictions:
-    is_deleted = 'is_deleted'
-    upload = 'can_upload'
-    receive = 'can_receive'
-    is_admin = 'is_admin'
-
-
 def restrict_access(action: str):
-    print(action)
     def decorator(handler: Callable):
         @wraps(handler)
         async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):

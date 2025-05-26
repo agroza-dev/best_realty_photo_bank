@@ -5,9 +5,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from api.crud.users import get_all_users, get_user_by_tg_id, update_user
-from bot.decorators.restrict_access import Restrictions
 from core import models
 from core.models import db_helper
+from core.models.static import Restrictions
 from core.schemas.user import UserUpdate
 from utils.logger import logger
 from utils.templates import render_web_template
