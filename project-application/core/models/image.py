@@ -29,7 +29,7 @@ class Image(Base):
     booking_session: Mapped[str] = mapped_column(Text, nullable=True)
 
     # Привязка к пользователю, который добавил фото
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship(
         foreign_keys="[Image.user_id]",
         back_populates="images",
