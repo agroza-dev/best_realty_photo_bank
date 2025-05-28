@@ -20,7 +20,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if settings.app.super_admin == user_id:
         target_user = await db_helper.execute_with_session(get_user_by_tg_id, target_user_id)
         if target_user is not None and not target_user.is_admin:
-            user_update = UserUpdate(is_admin=True)
+            user_update = UserUpdate(is_admin=True, is_deleted=False)
             updated_user = await models.db_helper.execute_with_session_scope(update_user, target_user.id, user_update)
             await context.bot.setMessageReaction(
                 update.message.chat_id,
