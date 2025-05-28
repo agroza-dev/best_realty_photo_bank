@@ -11,7 +11,6 @@ from api.crud.images import get_all_images, get_images_by_ids, update_image
 from bot.utils.files import send_file_as_document
 from core import models
 from core.config import settings
-from core.models import User
 from core.schemas.image import ImageUpdate
 from utils.logger import logger
 from utils.templates import render_web_template

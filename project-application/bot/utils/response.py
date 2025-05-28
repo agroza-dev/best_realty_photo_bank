@@ -36,6 +36,10 @@ async def delete_message(message_id, update: Update, context: ContextTypes.DEFAU
             logger.warning(f"[delete_message] Сообщение {message_id} не может быть удалено: {e} очищаем куку.")
             context.user_data['last_message_id'] = False
 
+        if "Message to delete not found" in str(e):
+            logger.warning(f"[delete_message] Сообщение {message_id} не найдено: {e} очищаем куку.")
+            context.user_data['last_message_id'] = False
+
         else:
             logger.error(f"[delete_message] BadRequest: {e}")
             raise

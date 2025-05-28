@@ -1,14 +1,10 @@
-import os
-from dataclasses import dataclass
-from io import BytesIO
-
-from telegram import Update, Message, PhotoSize
-from telegram._bot import BT
+from telegram import Update
 from telegram.ext import ContextTypes
 
 from api.crud.images import create_image
 from api.crud.users import get_user_by_tg_id
 from bot.decorators.restrict_access import restrict_access, Restrictions
+from bot.utils.files import save_telegram_image, get_hash, is_hash_already_exists, get_original_file
 from bot.utils.response import send_response, delete_message
 from utils.templates import render_bot_template
 from core import models
@@ -16,7 +12,7 @@ from core.schemas.image import ImageCreate
 from utils.logger import logger
 from bot.utils import state
 from core.config import settings
-from PIL import Image
+
 from telegram.error import TimedOut
 
 
@@ -81,31 +77,42 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await before_process(context, update)
         logger.info(f"Context data after_before process: {context.user_data}")
 
-        created_image = await save_telegram_image(context.bot, message, settings.images.path)
-        session_image_count = context.user_data.get('session_image_count', 0)
-        context.user_data['session_image_count'] =  session_image_count + 1
 
-        if message.caption:
-            context.user_data['session_message'] = message.caption
+        file_hash = await get_hash(context.bot, get_original_file(message))
 
-        new_image_create = ImageCreate(
-            file_unique_id=created_image.file_unique_id,
-            file_id=created_image.file_id,
-            local_file_name=created_image.local_file_name,
-            user_id=user.id,
-            session_id=context.user_data.get('session'),
-            description=context.user_data.get('session_message') or '',
-        )
-        new_image: models.Image = await models.db_helper.execute_with_session_scope(create_image, new_image_create)
-        if new_image is not None:
-            logger.info(f"Created image {new_image}")
+        if await is_hash_already_exists(file_hash):
+            """Фотография с таким hash уже есть"""
+            session_image_duplicate_count = context.user_data.get('session_image_duplicate_count', 0)
+            context.user_data['session_image_duplicate_count'] = session_image_duplicate_count + 1
         else:
-            logger.error(f"Error on create image {new_image_create} => {message.from_user.username}")
-            # TODO: Send error message?
+            created_image = await save_telegram_image(context.bot, message, settings.images.path)
+            session_image_count = context.user_data.get('session_image_count', 0)
+            context.user_data['session_image_count'] =  session_image_count + 1
 
-        response_message = render_bot_template(
-            "receive_image.j2",
-            {'status': 'images_was_received', 'session_image_count': context.user_data.get('session_image_count', 0)}
+            if message.caption:
+                context.user_data['session_message'] = message.caption
+
+            new_image_create = ImageCreate(
+                file_unique_id=created_image.file_unique_id,
+                file_id=created_image.file_id,
+                local_file_name=created_image.local_file_name,
+                user_id=user.id,
+                session_id=context.user_data.get('session'),
+                description=context.user_data.get('session_message') or '',
+                calculated_hash=file_hash,
+            )
+            new_image: models.Image = await models.db_helper.execute_with_session_scope(create_image, new_image_create)
+            if new_image is not None:
+                logger.info(f"Created image {new_image}")
+            else:
+                logger.error(f"Error on create image {new_image_create} => {message.from_user.username}")
+                # TODO: Send error message?
+
+        response_message = render_bot_template("receive_image.j2",{
+                'status': 'images_was_received',
+                'session_image_count': context.user_data.get('session_image_count', 0),
+                'session_image_duplicate_count': context.user_data.get('session_image_duplicate_count', 0),
+            }
         )
 
         last_message_id = context.user_data.get('last_message_id', None)
@@ -117,51 +124,3 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             sent_message = await send_response(update, context, response=response_message)
             logger.info(f"Sent message {sent_message}")
             context.user_data['last_message_id'] = sent_message.message_id
-
-
-TARGET_THUMB_SIZE = (320, 320)
-
-async def save_telegram_image(bot: BT, message: Message, save_dir: str) -> CreatedImage:
-    os.makedirs(save_dir, exist_ok=True)
-    logger.info(f"Try to save image from message: {message}")
-
-    def safe_filename(filename: str) -> str:
-        return filename.strip().replace(" ", "_").rstrip("-.")
-
-    async def download_and_resize(file: PhotoSize, name: str):
-        thumb_path = os.path.join(save_dir, f"{name}_thumb.jpg")
-        telegram_file = await bot.get_file(file.file_id)
-        file_bytes = BytesIO()
-        await telegram_file.download_to_memory(out=file_bytes)
-        file_bytes.seek(0)
-
-        image = Image.open(file_bytes)
-        image.resize(TARGET_THUMB_SIZE, Image.Resampling.LANCZOS)
-        image.save(thumb_path, "JPEG")
-
-    if message.photo:
-        photo_sizes = sorted(message.photo, key=lambda p: p.width)
-        original = photo_sizes[-1]
-        thumbnail = photo_sizes[1] if len(photo_sizes) > 2 else photo_sizes[0]
-        local_file_name = safe_filename(thumbnail.file_unique_id)
-        await download_and_resize(thumbnail, local_file_name)
-
-        return CreatedImage(
-            file_unique_id=original.file_unique_id,
-            file_id=original.file_id,
-            local_file_name=local_file_name,
-        )
-
-    elif message.document and message.document.mime_type.startswith("image/"):
-        doc = message.document
-        if doc.thumbnail:
-            local_file_name = safe_filename(doc.thumbnail.file_unique_id)
-            await download_and_resize(doc.thumbnail, local_file_name)
-
-        return CreatedImage(
-            file_unique_id=doc.file_unique_id,
-            file_id=doc.file_id,
-            local_file_name=local_file_name,
-        )
-    else:
-        raise ValueError("Message does not contain a valid image.")

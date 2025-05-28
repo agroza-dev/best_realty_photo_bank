@@ -5,9 +5,41 @@ from typing import Sequence
 
 from sqlalchemy.orm import selectinload
 
+from api.crud.filter import FieldFilter, apply_filter
 from core.models import Image
 from core.schemas.image import ImageUpdate
 from core.schemas.user import UserCreate
+
+from typing import Optional
+from pydantic import BaseModel
+
+from utils.logger import logger
+
+
+class ImageFilter(BaseModel):
+    id: Optional[FieldFilter[int]] = None
+    telegram_id: Optional[FieldFilter[int]] = None
+    calculated_hash: Optional[FieldFilter[str]] = None
+    is_active: Optional[FieldFilter[bool]] = None
+
+
+async def get_images(session: AsyncSession, filters: ImageFilter) -> Sequence[Image]:
+    try:
+        stmt = select(Image).options(selectinload(Image.user))
+
+        if filters.id:
+            stmt = stmt.where(*apply_filter(Image.id, filters.id))
+        if filters.calculated_hash:
+            stmt = stmt.where(*apply_filter(Image.calculated_hash, filters.calculated_hash))
+        if filters.is_active:
+            stmt = stmt.where(*apply_filter(Image.is_active, filters.is_active))
+
+        stmt = stmt.order_by(Image.id)
+        result = await session.scalars(stmt)
+        return result.all()
+    except Exception as e:
+        logger.exception(f"[get_images] Необработанное исключение: {e}, для фильтра {filters}")
+        raise
 
 
 async def get_all_images(session: AsyncSession) -> Sequence[Image]:

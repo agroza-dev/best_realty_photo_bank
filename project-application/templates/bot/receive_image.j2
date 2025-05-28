@@ -1,6 +1,6 @@
 {% if status %}
     {% if status == 'images_was_received' %}
-        Фотографии сохранены({{ session_image_count }}). Можно добавлять еще.
+        Фотографий сохранено {{ session_image_count }}. {% if session_image_duplicate_count %}Найдено и не загружено дублей: {{ session_image_duplicate_count }}. Можно добавлять еще{% endif %}
     {% elif status == 'wrong_state' %}
         Ошибка состояния. Для начала процесса добавления фотографий, воспользуйтесь командой /add_photos
     {% elif status == 'in_progress' %}
