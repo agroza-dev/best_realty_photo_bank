@@ -7,7 +7,7 @@ from core.config import settings
 
 from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler, show_webapp_handler, \
     confirm_booking_session_handler, reject_booking_session_handler, error_handler, show_users_web_app_handler, \
-    make_user_admin_handler
+    make_user_admin_handler, add_category_handler
 
 if __name__ == "__main__":
     request = HTTPXRequest(
@@ -32,6 +32,7 @@ if __name__ == "__main__":
                    .build()
     )
     application.add_handler(CommandHandler("make_user_admin", make_user_admin_handler))
+    application.add_handler(CommandHandler("add_category", add_category_handler))
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("add_photos", start_photo_process_handler))
     application.add_handler(CommandHandler("show", show_webapp_handler))
