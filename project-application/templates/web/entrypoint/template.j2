@@ -14,7 +14,8 @@
             const next = urlParams.get("next") || "/";
 
             if (initData) {
-                const target = `${next}?initData=${encodeURIComponent(initData)}`;
+                const separator = next.includes('?') ? '&' : '?';
+                const target = `${next}${separator}initData=${encodeURIComponent(initData)}`;
                 window.location.replace(target);
             } else {
                 document.body.innerHTML = "<p>Ошибка! Не удалось верифицировать пользователя!</p>";

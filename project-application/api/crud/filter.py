@@ -16,12 +16,19 @@ class FieldFilter(BaseModel, Generic[T]):
     gt: Optional[T] = None
     gte: Optional[T] = None
     like: Optional[str] = None
-
+    is_null: Optional[bool] = None
 
 ColumnType = Union[InstrumentedAttribute, ColumnElement]
 
+
 def apply_filter(column: ColumnType, filter_obj: FieldFilter):
     conditions: List[BinaryExpression] = []
+
+    if filter_obj.is_null is True:
+        conditions.append(column.is_(None))
+    elif filter_obj.is_null is False:
+        conditions.append(column.is_not(None))
+
     if filter_obj.eq is not None:
         conditions.append(column == filter_obj.eq)
     if filter_obj.ne is not None:
@@ -29,7 +36,7 @@ def apply_filter(column: ColumnType, filter_obj: FieldFilter):
     if filter_obj.pin is not None:
         conditions.append(column.in_(filter_obj.pin))
     if filter_obj.not_in is not None:
-        conditions.append(column.in_(filter_obj.not_in))
+        conditions.append(~column.in_(filter_obj.not_in))
     if filter_obj.lt is not None:
         conditions.append(column < filter_obj.lt)
     if filter_obj.lte is not None:

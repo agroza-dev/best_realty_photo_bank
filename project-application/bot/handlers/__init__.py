@@ -8,6 +8,7 @@ from .reject_booking_session_handler import handler as reject_booking_session_ha
 from .error_handler import handler as error_handler
 from .make_user_admin_handler import handler as make_user_admin_handler
 from .add_category_handler import handler as add_category_handler
+from .action_button_handler import handler as action_button_handler
 
 __all__ = [
     "start_handler",
@@ -20,4 +21,5 @@ __all__ = [
     "error_handler",
     "make_user_admin_handler",
     "add_category_handler",
+    "action_button_handler",
 ]

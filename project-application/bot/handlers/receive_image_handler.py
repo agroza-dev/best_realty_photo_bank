@@ -1,6 +1,10 @@
-from telegram import Update
+import json
+
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
+from api.crud.categories import CategoryFilter, get_categories
+from api.crud.filter import FieldFilter
 from api.crud.images import create_image
 from api.crud.users import get_user_by_tg_id
 from bot.decorators.restrict_access import restrict_access, Restrictions
@@ -72,11 +76,13 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if message.photo or message.document:
         message_media_group_id = message.media_group_id
         session_media_group_id = context.user_data.get('session_media_group', False)
-        logger.info(f"MEDIA GROUP: message -> {message_media_group_id}    session -> {session_media_group_id}")
+        logger.info(f"MEDIA GROUP: message -> {message_media_group_id} session -> {session_media_group_id}")
         if not session_media_group_id or session_media_group_id != message_media_group_id:
             await before_process(context, update)
         logger.info(f"Context data after_before process: {context.user_data}")
 
+        if message.caption:
+            context.user_data['session_message'] = message.caption
 
         file_hash = await get_hash(context.bot, get_original_file(message))
 
@@ -89,8 +95,7 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_image_count = context.user_data.get('session_image_count', 0)
             context.user_data['session_image_count'] =  session_image_count + 1
 
-            if message.caption:
-                context.user_data['session_message'] = message.caption
+
 
             new_image_create = ImageCreate(
                 file_unique_id=created_image.file_unique_id,
@@ -119,8 +124,44 @@ async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"last_message_id = {last_message_id}")
         if last_message_id is not None:
             logger.info(f"debug {response_message} {update.effective_chat} {context.user_data.get('last_message_id')}")
-            await context.bot.edit_message_text(response_message, update.effective_chat.id, context.user_data.get('last_message_id'))
-        else:
-            sent_message = await send_response(update, context, response=response_message)
-            logger.info(f"Sent message {sent_message}")
-            context.user_data['last_message_id'] = sent_message.message_id
+            await delete_message(context.user_data.get('last_message_id'), update, context)
+
+        categories = await models.db_helper.execute_with_session(get_categories, CategoryFilter())
+        keyboard = []
+        row = []
+        for i, category in enumerate(categories):
+            callback_data = json.dumps({
+                    "act": "set_cat",
+                    "cid": category.id,
+                    "sid": context.user_data.get('session')
+                })
+
+            callback_data_len = len(callback_data.encode('utf-8'))
+            if callback_data_len > settings.bot.callback_data_max_len:
+                logger.error(f"Error on building keyboard button. Length is more than {settings.bot.callback_data_max_len} = {callback_data_len}")
+                # TODO Maybe need to raise exception
+            button = InlineKeyboardButton(
+                text=category.title,
+                callback_data=callback_data,
+            )
+            row.append(button)
+
+            if len(row) == 2:
+                keyboard.append(row)
+                row = []
+
+        if row:
+            keyboard.append(row)
+
+        try:
+            sent_message = await send_response(
+                update,
+                context,
+                response=response_message,
+                keyboard=InlineKeyboardMarkup(keyboard)
+            )
+        except Exception as e:
+            logger.error(f"Ошибка при отправке сообщения '{response_message}' с клавиатурой '{keyboard}'")
+            raise
+        logger.info(f"Sent message {sent_message}")
+        context.user_data['last_message_id'] = sent_message.message_id

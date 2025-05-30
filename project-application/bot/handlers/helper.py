@@ -1,7 +1,10 @@
 import asyncio
+import secrets
+import string
 import time
 
 from telegram.error import TimedOut
+from telegram.ext import ContextTypes
 
 from utils.logger import logger
 
@@ -32,3 +35,14 @@ async def do_with_retry(func, *args, retries=3, delay=2, label='unknown', **kwar
     # Пробрасываем последнее исключение
     if last_exception:
         raise last_exception
+
+
+def generate_short_id(length=10):
+    return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
+
+
+def reset_user_data(context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['session'] = generate_short_id()
+    context.user_data['session_image_duplicate_count'] = 0
+    context.user_data['session_image_count'] = 0
+    context.user_data['session_message'] = False

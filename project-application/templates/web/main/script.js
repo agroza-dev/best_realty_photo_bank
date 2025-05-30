@@ -26,4 +26,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     updateCounter();
+
+
+    // Categories
+    const menuButton = document.getElementById('menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    // Открытие/закрытие сайдбара
+    menuButton.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+    });
+
+    // Закрытие при клике на оверлее
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.style.display = 'none';
+    });
 });

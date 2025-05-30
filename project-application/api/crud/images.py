@@ -21,6 +21,8 @@ class ImageFilter(BaseModel):
     telegram_id: Optional[FieldFilter[int]] = None
     calculated_hash: Optional[FieldFilter[str]] = None
     is_active: Optional[FieldFilter[bool]] = None
+    session_id: Optional[FieldFilter[str]] = None
+    category_id: Optional[FieldFilter[int]] = None
 
 
 async def get_images(session: AsyncSession, filters: ImageFilter) -> Sequence[Image]:
@@ -33,6 +35,10 @@ async def get_images(session: AsyncSession, filters: ImageFilter) -> Sequence[Im
             stmt = stmt.where(*apply_filter(Image.calculated_hash, filters.calculated_hash))
         if filters.is_active:
             stmt = stmt.where(*apply_filter(Image.is_active, filters.is_active))
+        if filters.session_id:
+            stmt = stmt.where(*apply_filter(Image.session_id, filters.session_id))
+        if filters.category_id:
+            stmt = stmt.where(*apply_filter(Image.category_id, filters.category_id))
 
         stmt = stmt.order_by(Image.id)
         result = await session.scalars(stmt)

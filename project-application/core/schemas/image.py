@@ -35,3 +35,4 @@ class ImageUpdate(ImageBase):
     hidden_at: Optional[datetime] = None
     booked_by: Optional[int] = None
     booking_session: Optional[str] = None
+    category_id: Optional[int] = None

@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from api.crud.users import get_user_by_tg_id, create_user
+from bot.handlers.helper import reset_user_data
 from bot.utils.response import send_response
 from utils.templates import render_bot_template
 from core.models import db_helper, User
@@ -25,7 +26,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         new_user: User = await db_helper.execute_with_session_scope(create_user, new_user_create)
         if new_user is None:
-            # TODO: do some error
             logger.error(f"Error on create user {user_id} => {message.from_user.username}")
+            raise ValueError("Ошибка! Не удалось инициализировать. ")
+
+    reset_user_data(context)
 
     await send_response(update, context, response=render_bot_template("start.j2"))

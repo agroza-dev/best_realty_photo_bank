@@ -55,6 +55,7 @@ class DatabaseConfig(BaseModel):
 class BotConfig(BaseModel):
     token: str = ''
     templates: str = os.path.join(BASE_DIR, "templates/bot")
+    callback_data_max_len: int = 64 # Максимальная длинна json который можно пихать в callback кнопки
     builder: dict[str, float] = field(default_factory=lambda: {
         'connect': 3.0,
         'read': 10.0,

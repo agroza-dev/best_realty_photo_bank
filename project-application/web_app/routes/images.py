@@ -7,7 +7,9 @@ from starlette.responses import RedirectResponse
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import Bot
 
-from api.crud.images import get_all_images, get_images_by_ids, update_image
+from api.crud.categories import get_categories, CategoryFilter
+from api.crud.filter import FieldFilter
+from api.crud.images import get_all_images, get_images_by_ids, update_image, ImageFilter, get_images
 from bot.utils.files import send_file_as_document
 from core import models
 from core.config import settings
@@ -21,9 +23,15 @@ html_router = APIRouter()
 api_router = APIRouter()
 
 @html_router.get("/", response_class=HTMLResponse)
-async def read_root(user = Depends(check_can_receive)):
+async def read_root(category_id: int | None = None, user = Depends(check_can_receive)):
+    images_filter = ImageFilter(category_id=FieldFilter(is_null=True))
+    print(category_id)
+    if category_id is not None and category_id:
+        images_filter = ImageFilter(category_id=FieldFilter(eq=int(category_id)))
+
+    print(images_filter)
     try:
-        images = await models.db_helper.execute_with_session(get_all_images)
+        images = await models.db_helper.execute_with_session(get_images, images_filter)
         prepared_images = []
 
         for image in images:
@@ -34,7 +42,13 @@ async def read_root(user = Depends(check_can_receive)):
                 'added_by': image.user.username,
                 'is_booked': image.booked_by is not None,
             })
-        html_content = render_web_template('main/template.j2', {'prepared_images': prepared_images})
+
+        html_content = render_web_template('main/template.j2', {
+                'prepared_images': prepared_images,
+                'categories': await models.db_helper.execute_with_session(get_categories, CategoryFilter()),
+                'category_id': category_id,
+            }
+        )
 
         return HTMLResponse(content=html_content, status_code=status.HTTP_200_OK)
     except Exception as e:

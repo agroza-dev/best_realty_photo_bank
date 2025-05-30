@@ -6,9 +6,100 @@
 
 {% block css_scripts %}
     <link rel="stylesheet" href="{{ '/templates/main/style.css' | autoversion }}">
+    <style>
+    /* Фиксированная кнопка */
+        #menu-button {
+          position: fixed;
+          top: 20px;
+          left: 10px;
+          z-index: 1000;
+          width: 40px;
+          height: 40px;
+          background-color: #3390ec;
+          color: white;
+          border-radius: 8px;
+          font-size: 24px;
+          text-align: center;
+          line-height: 40px;
+          cursor: pointer;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Сайдбар изначально скрыт */
+        #sidebar {
+          position: fixed;
+          top: 0;
+          left: -200px; /* за экраном */
+          width: 200px;
+          height: 100%;
+          background-color: #ffffff;
+          color: #333;
+          padding-top: 60px;
+          transition: left 0.3s ease;
+          z-index: 999;
+          box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+        }
+
+        /* Активное состояние сайдбара */
+        #sidebar.open {
+          left: 0;
+        }
+
+        /* Пункты меню */
+        #sidebar ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        #sidebar li {
+          padding: 15px 20px;
+          border-bottom: 1px solid #eee;
+          transition: background-color 0.3s ease;
+        }
+
+        #sidebar li:hover {
+          background-color: #f5f5f5;
+        }
+
+        #sidebar a {
+          text-decoration: none;
+          color: #333;
+          font-size: 16px;
+          display: block;
+          width: 100%;
+        }
+
+        /* Активная категория */
+        #sidebar li.active {
+          background-color: #e0f0ff;
+          border-left: 4px solid #3390ec;
+          font-weight: bold;
+          color: #0078d7;
+        }
+
+        #sidebar li.active a {
+          color: #0078d7;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
+    <div id="menu-button">☰</div>
+
+    <div id="sidebar">
+        <ul>
+            <li class="{% if not category_id %}active{% endif %}">
+                <a href="/entrypoint?next=/?category_id=0">Без категории</a>
+            </li>
+            {% for category in categories %}
+                <li class="{% if category.id == category_id %}active{% endif %}">
+                    <a href="/entrypoint?next=/?category_id={{ category.id }}">{{ category.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="overlay"></div>
     <h2 style="text-align: center;">Выберите фотографии</h2>
     <form action="/select_photos" method="post" class="images_form">
         <div class="images_wrapper">

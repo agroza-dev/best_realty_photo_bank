@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import ForeignKey, String, DateTime, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 
 from core.models.base import Base
 
@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.models.user import User
+    from core.models import Category
 
 class Image(Base):
     file_unique_id: Mapped[str] = mapped_column(String, nullable=True)
@@ -54,3 +55,6 @@ class Image(Base):
     hidden_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     calculated_hash: Mapped[str] = mapped_column(String, nullable=True)
+
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    category = relationship("Category", backref=backref("images"))

@@ -7,7 +7,7 @@ from core.config import settings
 
 from bot.handlers import start_handler, start_photo_process_handler, receive_image_handler, show_webapp_handler, \
     confirm_booking_session_handler, reject_booking_session_handler, error_handler, show_users_web_app_handler, \
-    make_user_admin_handler, add_category_handler
+    make_user_admin_handler, add_category_handler, action_button_handler
 
 if __name__ == "__main__":
     request = HTTPXRequest(
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     application.add_handler(MessageHandler(filters.PHOTO | filters.ATTACHMENT, receive_image_handler))
     application.add_handler(CallbackQueryHandler(confirm_booking_session_handler, pattern=r"^confirm_booking_session:"))
     application.add_handler(CallbackQueryHandler(reject_booking_session_handler, pattern=r"^reject_booking_session:"))
+    application.add_handler(CallbackQueryHandler(action_button_handler))
 
     application.add_error_handler(error_handler)
 

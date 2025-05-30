@@ -27,6 +27,13 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 
+@app.middleware("http")
+async def add_custom_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Pinggy-No-Screen"] = "true"
+    return response
+
+
 if __name__ == "__main__":
     logger.info("Initializing FastAPI server...")
     uvicorn.run(
