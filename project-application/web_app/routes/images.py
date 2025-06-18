@@ -9,7 +9,7 @@ from telegram import Bot
 
 from api.crud.categories import get_categories, CategoryFilter
 from api.crud.filter import FieldFilter
-from api.crud.images import get_all_images, get_images_by_ids, update_image, ImageFilter, get_images
+from api.crud.images import get_images_by_ids, update_image, ImageFilter, get_images
 from bot.utils.files import send_file_as_document
 from core import models
 from core.config import settings
@@ -24,12 +24,11 @@ api_router = APIRouter()
 
 @html_router.get("/", response_class=HTMLResponse)
 async def read_root(category_id: int | None = None, user = Depends(check_can_receive)):
-    images_filter = ImageFilter(category_id=FieldFilter(is_null=True))
+    images_filter = ImageFilter(category_id=FieldFilter(is_null=True), is_active=FieldFilter(eq=1))
     print(category_id)
     if category_id is not None and category_id:
-        images_filter = ImageFilter(category_id=FieldFilter(eq=int(category_id)))
+        images_filter = ImageFilter(category_id=FieldFilter(eq=int(category_id)), is_active=FieldFilter(eq=1))
 
-    print(images_filter)
     try:
         images = await models.db_helper.execute_with_session(get_images, images_filter)
         prepared_images = []
