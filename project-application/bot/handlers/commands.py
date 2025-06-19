@@ -7,7 +7,7 @@ from core import models
 from core.models import db_helper, User
 
 
-async def set_user_specific_commands(app: Application, user_id: int):
+async def set_user_specific_commands(app: Application, user_id: int) -> None:
     bot = app.bot
     user: User = await db_helper.execute_with_session(get_user_by_tg_id, user_id)
 
@@ -26,6 +26,7 @@ async def set_user_specific_commands(app: Application, user_id: int):
 
         if user.is_admin:
             commands.append(BotCommand(command="manage_users", description="Изменять роли пользователей"))
+            commands.append(BotCommand(command="refresh_commands_list", description="Пере применить список команд"))
 
     await bot.set_my_commands(
         commands=commands,
@@ -33,7 +34,7 @@ async def set_user_specific_commands(app: Application, user_id: int):
     )
 
 
-async def set_commands(app: Application):
+async def set_commands(app: Application) -> None:
     users = await models.db_helper.execute_with_session(get_all_users)
 
     for user in users:

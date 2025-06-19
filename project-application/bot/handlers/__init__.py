@@ -9,6 +9,7 @@ from .error_handler import handler as error_handler
 from .make_user_admin_handler import handler as make_user_admin_handler
 from .add_category_handler import handler as add_category_handler
 from .action_button_handler import handler as action_button_handler
+from .refresh_commands_list_handler import handler as refresh_commands_list_handler
 
 __all__ = [
     "start_handler",
@@ -22,4 +23,5 @@ __all__ = [
     "make_user_admin_handler",
     "add_category_handler",
     "action_button_handler",
+    "refresh_commands_list_handler",
 ]
