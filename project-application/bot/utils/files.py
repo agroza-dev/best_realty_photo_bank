@@ -36,6 +36,7 @@ async def send_file_as_document(bot: Bot, chat_id: int, file_id: str, filename: 
         )
     except TelegramError as e:
         logger.error(f"[!] Ошибка при отправке файла: {e}")
+        print(f"[!] Ошибка при отправке файла: {e}")
         raise ValueError("Ошибка. Не удалось выдать забронированное изображение.")
 
 TARGET_THUMB_SIZE = (320, 320)
