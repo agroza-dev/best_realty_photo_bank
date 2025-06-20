@@ -53,8 +53,10 @@ async def send_file_as_document(
 
     except TelegramError as e:
         logger.error(f"[!] Ошибка Telegram при отправке файла: {e}")
+        raise ValueError(f"Ошибка Telegram при отправке файла: {e}")
     except Exception as e:
         logger.exception(f"[!] Непредвиденная ошибка при отправке файла: {e}")
+        raise ValueError(f"Ошибка внутренняя при отправке файла: {e}")
 
 TARGET_THUMB_SIZE = (320, 320)
 

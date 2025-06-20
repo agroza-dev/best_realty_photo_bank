@@ -82,6 +82,7 @@ async def select_photos(
             booked += 1
         except Exception as e:
             print(f"[!] Ошибка при отправке файла {image.id}: {e}")
+
     if booked > 0:
         await bot.send_message(
             chat_id=user.telegram_id,
@@ -95,7 +96,11 @@ async def select_photos(
     else:
         await bot.send_message(
             chat_id=user.telegram_id,
-            text="Ошибка! С этими фотографиями возникла проблема, не могу выдать их.",
+            text="Ошибка! С этими фотографиями возникла проблема, не могу выдать их",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("❌ Скрыть проблемные фото", callback_data=f"confirm_booking_session:{session_id}"),
+            ]
+            ])
         )
 
     return RedirectResponse(url=settings.web_app.url, status_code=status.HTTP_303_SEE_OTHER)
