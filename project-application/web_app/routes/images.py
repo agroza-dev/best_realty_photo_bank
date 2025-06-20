@@ -60,33 +60,38 @@ async def select_photos(
         selected_photos_ids: Annotated[list[str], Form(...)],
         user = Depends(check_can_receive),
 ):
-    logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
+    try:
+        logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
 
-    session_id = uuid4().hex
+        session_id = uuid4().hex
 
-    images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
+        images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
 
-    bot = Bot(token=settings.bot.token)
-    for image in images:
-        image_update = ImageUpdate(booked_by=user.telegram_id, booking_session=session_id)
+        bot = Bot(token=settings.bot.token)
+        for image in images:
+            image_update = ImageUpdate(booked_by=user.telegram_id, booking_session=session_id)
 
-        await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
-        await send_file_as_document(
-            bot=bot,
+            await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
+            await send_file_as_document(
+                bot=bot,
+                chat_id=user.telegram_id,
+                file_id=image.file_id,
+                filename=f"{image.local_file_name}.jpg"
+            )
+
+        await bot.send_message(
             chat_id=user.telegram_id,
-            file_id=image.file_id,
-            filename=f"{image.local_file_name}.jpg"
+            text="Фотографии забронированы, нужно подтвердить действие!",
+            reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
+                    InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
+                ]
+            ])
         )
-
-    await bot.send_message(
-        chat_id=user.telegram_id,
-        text="Фотографии забронированы, нужно подтвердить действие!",
-        reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("✅ Подтвердить забор", callback_data=f"confirm_booking_session:{session_id}"),
-                InlineKeyboardButton("❌ Отмена бронирования", callback_data=f"reject_booking_session:{session_id}")
-            ]
-        ])
-    )
+    except Exception as e:
+        logger.error(f"[!] Ошибка при отправке файла: {e}")
+        print(f"[!] Ошибка при отправке файла: {e}")
+        raise ValueError("Ошибка. Не удалось выдать забронированное изображение.")
 
     return RedirectResponse(url=settings.web_app.url, status_code=status.HTTP_303_SEE_OTHER)
 
