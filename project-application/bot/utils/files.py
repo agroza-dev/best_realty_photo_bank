@@ -21,23 +21,40 @@ class CreatedImage:
     file_id: str
     local_file_name: str
 
-async def send_file_as_document(bot: Bot, chat_id: int, file_id: str, filename: str = "file.jpg"):
+async def send_file_as_document(
+    bot: Bot,
+    chat_id: int,
+    file_id: str,
+    filename: str = "file.jpg",
+    max_file_size: int = 10 * 1024 * 1024  # 10 MB
+):
     try:
         await bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
 
         file = await bot.get_file(file_id)
+
+        # Проверка размера файла
+        if file.file_size > max_file_size:
+            logger.warning(f"Файл слишком большой: {file.file_size} байт")
+            raise ValueError(f"Файл превышает допустимый размер {max_file_size} байт")
+
         buffer = io.BytesIO()
         await file.download_to_memory(out=buffer)
         buffer.seek(0)
+
+        if len(buffer.getvalue()) == 0:
+            logger.error("Скачанный файл пуст.")
+            raise ValueError("Содержимое файла отсутствует.")
 
         await bot.send_document(
             chat_id=chat_id,
             document=InputFile(buffer, filename=filename),
         )
+
     except TelegramError as e:
-        logger.error(f"[!] Ошибка при отправке файла: {e}")
-        print(f"[!] Ошибка при отправке файла: {e}")
-        raise ValueError("Ошибка. Не удалось выдать забронированное изображение.")
+        logger.error(f"[!] Ошибка Telegram при отправке файла: {e}")
+    except Exception as e:
+        logger.exception(f"[!] Непредвиденная ошибка при отправке файла: {e}")
 
 TARGET_THUMB_SIZE = (320, 320)
 

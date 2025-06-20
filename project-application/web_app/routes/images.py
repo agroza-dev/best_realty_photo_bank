@@ -60,15 +60,16 @@ async def select_photos(
         selected_photos_ids: Annotated[list[str], Form(...)],
         user = Depends(check_can_receive),
 ):
-    try:
-        logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
+    logger.info(f'Пользователь @{user.username}|{user.telegram_id}|{user.first_name} решил забронировать фото: {selected_photos_ids}')
 
-        session_id = uuid4().hex
+    session_id = uuid4().hex
 
-        images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
+    images = await models.db_helper.execute_with_session(get_images_by_ids, selected_photos_ids)
 
-        bot = Bot(token=settings.bot.token)
-        for image in images:
+    bot = Bot(token=settings.bot.token)
+    booked = 0
+    for image in images:
+        try:
             image_update = ImageUpdate(booked_by=user.telegram_id, booking_session=session_id)
 
             await models.db_helper.execute_with_session_scope(update_image, image.id, image_update)
@@ -78,7 +79,10 @@ async def select_photos(
                 file_id=image.file_id,
                 filename=f"{image.local_file_name}.jpg"
             )
-
+            booked += 1
+        except Exception as e:
+            print(f"[!] Ошибка при отправке файла {image.id}: {e}")
+    if booked > 0:
         await bot.send_message(
             chat_id=user.telegram_id,
             text="Фотографии забронированы, нужно подтвердить действие!",
@@ -88,10 +92,11 @@ async def select_photos(
                 ]
             ])
         )
-    except Exception as e:
-        logger.error(f"[!] Ошибка при отправке файла: {e}")
-        print(f"[!] Ошибка при отправке файла: {e}")
-        raise ValueError("Ошибка. Не удалось выдать забронированное изображение.")
+    else:
+        await bot.send_message(
+            chat_id=user.telegram_id,
+            text="Ошибка! С этими фотографиями возникла проблема, не могу выдать их.",
+        )
 
     return RedirectResponse(url=settings.web_app.url, status_code=status.HTTP_303_SEE_OTHER)
 
